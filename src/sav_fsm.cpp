@@ -55,13 +55,13 @@ int main(int argc, char **argv)
     target_pose_1.ref_pose.resize(41);
     target_pose_1.ref_twist.resize(41);
     target_pose_2.ref_pose.resize(41);
-    target_pose_2.ref_twist.resize(42);
+    target_pose_2.ref_twist.resize(41);
     target_pose_3.ref_pose.resize(41);
     target_pose_3.ref_twist.resize(41);
     target_pose_4.ref_pose.resize(41);
-    target_pose_4.ref_twist.resize(42);
+    target_pose_4.ref_twist.resize(41);
     target_pose_5.ref_pose.resize(41);
-    target_pose_5.ref_twist.resize(42);
+    target_pose_5.ref_twist.resize(41);
 
     for (int i = 0; i < 41; i++){
         target_pose_1.ref_pose[i].position.x = -1;

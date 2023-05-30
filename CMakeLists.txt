@@ -70,8 +70,10 @@ target_link_libraries(example_mission_node
   ${catkin_LIBRARIES}
 )
 
-
-
+add_executable(sav_fsm src/sav_fsm.cpp)
+target_link_libraries(sav_fsm
+  ${catkin_LIBRARIES}
+)
 
 add_executable(system_identification src/system_identification.cpp)
 target_link_libraries(system_identification

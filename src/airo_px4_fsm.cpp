@@ -323,10 +323,10 @@ bool AIRO_PX4_FSM::toggle_offboard(bool flag){
 
 	if (flag){
 		previous_state = current_state;
-		if (previous_state.mode == "OFFBOARD"){
+		if (previous_state.mode == "GUIDED"){
             previous_state.mode = "MANUAL"; // Not allowed
         }
-		offboard_setmode.request.custom_mode = "OFFBOARD";
+		offboard_setmode.request.custom_mode = "GUIDED";
 
         // Start by streaming setpoints
         for(int i = 10; ros::ok() && i > 0; --i){

@@ -45,7 +45,8 @@ int main(int argc, char **argv)
     ros::Rate rate(20.0);
     State state = TAKEOFF;
 
-    ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
+    //ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
+    ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose",100,pose_cb);
     ros::Subscriber fsm_info_sub = nh.subscribe<airo_px4::FSMInfo>("/airo_px4/fsm_info",10,fsm_info_cb);
     ros::Publisher command_pub = nh.advertise<airo_px4::Reference>("/airo_px4/setpoint",10);
     // ros::Publisher command_pub = nh.advertise<geometry_msgs::PoseStamped>("/airo_px4/position_setpoint",10);
@@ -155,9 +156,9 @@ int main(int argc, char **argv)
                         }
                     }
                     if(target_2_reached && !target_3_reached){
-                        target_pose_2.header.stamp = ros::Time::now();
+                        target_pose_3.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_3);
-                        std::cout<<"pose 2"<<std::endl;
+                        std::cout<<"pose 3"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_3.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_3.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_3.ref_pose[0].position.z) < 0.5){
@@ -165,9 +166,9 @@ int main(int argc, char **argv)
                         }
                     }
                     if(target_3_reached && !target_4_reached){
-                        target_pose_2.header.stamp = ros::Time::now();
+                        target_pose_4.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_4);
-                        std::cout<<"pose 2"<<std::endl;
+                        std::cout<<"pose 4"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_4.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_4.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_4.ref_pose[0].position.z) < 0.5){
@@ -175,25 +176,17 @@ int main(int argc, char **argv)
                         }
                     }
                     if(target_4_reached && !target_5_reached){
-                        target_pose_2.header.stamp = ros::Time::now();
+                        target_pose_5.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_5);
-                        std::cout<<"pose 2"<<std::endl;
+                        std::cout<<"pose 5"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_5.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_5.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_5.ref_pose[0].position.z) < 0.5){
+                            target_5_reached = true;
                             state = LAND;
                         }
                     }
-                    if(target_4_reached && !target_5_reached){
-                        target_pose_2.header.stamp = ros::Time::now();
-                        command_pub.publish(target_pose_5);
-                        std::cout<<"pose 2"<<std::endl;
-                        if(abs(local_pose.pose.position.x - target_pose_5.ref_pose[0].position.x)
-                         + abs(local_pose.pose.position.y - target_pose_5.ref_pose[0].position.y)
-                         + abs(local_pose.pose.position.z - target_pose_5.ref_pose[0].position.z) < 0.5){
-                            state = LAND;
-                        }
-                    }
+                    
                 }
                 break;
             }

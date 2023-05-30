@@ -50,9 +50,9 @@ int main(int argc, char **argv)
     target_pose_2.ref_pose.resize(42);
 
     for (int i = 0; i < 41; i++){
-        target_pose_1.ref_pose[i].position.x = 1.5;
-        target_pose_1.ref_pose[i].position.y = 1.5;
-        target_pose_1.ref_pose[i].position.z = 1.5;
+        target_pose_1.ref_pose[i].position.x = 1;
+        target_pose_1.ref_pose[i].position.y = 1;
+        target_pose_1.ref_pose[i].position.z = 1;
         target_pose_1.ref_pose[i].orientation.w = 0.9238795;
         target_pose_1.ref_pose[i].orientation.x = 0.0;
         target_pose_1.ref_pose[i].orientation.y = 0.0;
@@ -60,9 +60,9 @@ int main(int argc, char **argv)
     }
 
     for (int i = 0; i < 41; i++){
-        target_pose_2.ref_pose[i].position.x = -1.5;
-        target_pose_2.ref_pose[i].position.y = -1.5;
-        target_pose_2.ref_pose[i].position.z = 1.5;
+        target_pose_2.ref_pose[i].position.x = 0;
+        target_pose_2.ref_pose[i].position.y = 0.5;
+        target_pose_2.ref_pose[i].position.z = 1;
         target_pose_2.ref_pose[i].orientation.w = 0.9238795;
         target_pose_2.ref_pose[i].orientation.x = 0.0;
         target_pose_2.ref_pose[i].orientation.y = 0;
@@ -93,6 +93,7 @@ int main(int argc, char **argv)
                     if(!target_1_reached){
                         target_pose_1.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_1);
+                        std::cout<<"pose 1"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z) < 0.5){
@@ -102,6 +103,7 @@ int main(int argc, char **argv)
                     else{
                         target_pose_2.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_2);
+                        std::cout<<"pose 2"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.5){

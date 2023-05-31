@@ -75,6 +75,11 @@ target_link_libraries(sav_fsm
   ${catkin_LIBRARIES}
 )
 
+add_executable(grasp_test src/grasp_test.cpp)
+target_link_libraries(grasp_test
+  ${catkin_LIBRARIES}
+)
+
 add_executable(system_identification src/system_identification.cpp)
 target_link_libraries(system_identification
   ${catkin_LIBRARIES}

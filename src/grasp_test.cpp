@@ -7,8 +7,7 @@
 #include <airo_px4/TakeoffLandTrigger.h>
 #include <airo_px4/Reference.h>
 
-geometry_msgs::PoseStamped local_pose;
-geometry_msgs::PoseStamped object_pose;
+geometry_msgs::PoseStamped local_pose, object_pose, current_object_pose;
 airo_px4::Reference target_pose_1;
 airo_px4::Reference target_pose_2;
 airo_px4::FSMInfo fsm_info;
@@ -32,6 +31,12 @@ void fsm_info_cb(const airo_px4::FSMInfo::ConstPtr& msg){
     fsm_info.is_waiting_for_command = msg->is_waiting_for_command;
 }
 
+void object_pose_sub(const geometry_msgs::PoseStamped::ConstPtr& object_pose){
+    current_object_pose.pose.position.x = object_pose->pose.position.x;
+    current_object_pose.pose.position.y = object_pose->pose.position.y;
+    current_object_pose.pose.position.z = object_pose->pose.position.z;   
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "offb_node");
@@ -40,7 +45,7 @@ int main(int argc, char **argv)
     State state = TAKEOFF;
 
     ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
-    ros::Subscriber object_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/vrpn_client_node/gh034_sav_object/pose", 10)
+    ros::Subscriber object_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/vrpn_client_node/gh034_sav_object/pose", 10, object_pose_sub);
     //ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose",100,pose_cb);
     ros::Subscriber fsm_info_sub = nh.subscribe<airo_px4::FSMInfo>("/airo_px4/fsm_info",10,fsm_info_cb);
     ros::Publisher command_pub = nh.advertise<airo_px4::Reference>("/airo_px4/setpoint",10);

@@ -6,6 +6,7 @@
 #include <airo_px4/FSMInfo.h>
 #include <airo_px4/TakeoffLandTrigger.h>
 #include <airo_px4/Reference.h>
+#include <mavros_msgs/OverrideRCIn.h>
 
 geometry_msgs::PoseStamped local_pose;
 airo_px4::Reference target_pose_1;
@@ -20,6 +21,11 @@ bool target_2_reached = false;
 bool target_3_reached = false;
 bool target_4_reached = false;
 bool target_5_reached = false;
+
+//Parameters of gripper
+int open_pwm = 1000, close_pwm = 1950;
+mavros_msgs::OverrideRCIn override_rc_in;
+int counter = 0, min_count = 200;
 
 enum State{
     TAKEOFF,
@@ -45,12 +51,13 @@ int main(int argc, char **argv)
     ros::Rate rate(20.0);
     State state = TAKEOFF;
 
-    //ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
-    ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose",100,pose_cb);
+    ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
+    //ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose",100,pose_cb);
     ros::Subscriber fsm_info_sub = nh.subscribe<airo_px4::FSMInfo>("/airo_px4/fsm_info",10,fsm_info_cb);
     ros::Publisher command_pub = nh.advertise<airo_px4::Reference>("/airo_px4/setpoint",10);
     // ros::Publisher command_pub = nh.advertise<geometry_msgs::PoseStamped>("/airo_px4/position_setpoint",10);
     ros::Publisher takeoff_land_pub = nh.advertise<airo_px4::TakeoffLandTrigger>("/airo_px4/takeoff_land_trigger",10);
+    ros::Publisher override_pub = nh.advertise<mavros_msgs::OverrideRCIn>("/mavros/rc/override",20);
 
     target_pose_1.ref_pose.resize(41);
     target_pose_1.ref_twist.resize(41);
@@ -65,7 +72,7 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < 41; i++){
         target_pose_1.ref_pose[i].position.x = -1;
-        target_pose_1.ref_pose[i].position.y = 1;
+        target_pose_1.ref_pose[i].position.y = -1;
         target_pose_1.ref_pose[i].position.z = 1;
         target_pose_1.ref_pose[i].orientation.w = 1;
         target_pose_1.ref_pose[i].orientation.x = 0.0;
@@ -148,30 +155,51 @@ int main(int argc, char **argv)
                     if(target_1_reached && !target_2_reached){
                         target_pose_2.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_2);
+                        // counter++;            
+                        // std::cout << "counter: " << counter << std::endl;
+                        override_rc_in.channels[9] = open_pwm; 
+                        override_pub.publish(override_rc_in);
+                        std::cout << "Gripper OPENS" << std::endl;
                         std::cout<<"pose 2"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.5){
+                         //&& counter > min_count){
                             target_2_reached = true;
                         }
+                    }
+                    if (target_2_reached){
+
                     }
                     if(target_2_reached && !target_3_reached){
                         target_pose_3.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_3);
+                        // counter++;            
+                        // std::cout << "counter: " << counter << std::endl;
+                        override_rc_in.channels[9] = close_pwm;
+                        std::cout << "Gripper CLOSES" << std::endl;
+                        override_pub.publish(override_rc_in);
                         std::cout<<"pose 3"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_3.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_3.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_3.ref_pose[0].position.z) < 0.5){
+                         //&& counter > min_count){
                             target_3_reached = true;
                         }
                     }
                     if(target_3_reached && !target_4_reached){
                         target_pose_4.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_4);
+                        // counter++;            
+                        // std::cout << "counter: " << counter << std::endl;
+                        override_rc_in.channels[9] = open_pwm;
+                        override_pub.publish(override_rc_in);
+                        std::cout << "Gripper OPENS" << std::endl;
                         std::cout<<"pose 4"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_4.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_4.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_4.ref_pose[0].position.z) < 0.5){
+                         //&& counter > min_count){
                             target_4_reached = true;
                         }
                     }

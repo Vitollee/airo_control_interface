@@ -10,10 +10,12 @@
 geometry_msgs::PoseStamped local_pose, object_pose, current_object_pose;
 airo_px4::Reference target_pose_1;
 airo_px4::Reference target_pose_2;
+airo_px4::Reference target_pose_3;
 airo_px4::FSMInfo fsm_info;
 airo_px4::TakeoffLandTrigger takeoff_land_trigger;
 bool target_1_reached = false;
- 
+bool target_2_reached = false; 
+
 enum State{
     TAKEOFF,
     COMMAND,
@@ -31,7 +33,7 @@ void fsm_info_cb(const airo_px4::FSMInfo::ConstPtr& msg){
     fsm_info.is_waiting_for_command = msg->is_waiting_for_command;
 }
 
-void object_pose_sub(const geometry_msgs::PoseStamped::ConstPtr& object_pose){
+void object_pose_cb(const geometry_msgs::PoseStamped::ConstPtr& object_pose){
     current_object_pose.pose.position.x = object_pose->pose.position.x;
     current_object_pose.pose.position.y = object_pose->pose.position.y;
     current_object_pose.pose.position.z = object_pose->pose.position.z;   
@@ -45,7 +47,7 @@ int main(int argc, char **argv)
     State state = TAKEOFF;
 
     ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
-    ros::Subscriber object_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/vrpn_client_node/gh034_sav_object/pose", 10, object_pose_sub);
+    ros::Subscriber object_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/vrpn_client_node/gh034_sav_object/pose", 10, object_pose_cb);
     //ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose",100,pose_cb);
     ros::Subscriber fsm_info_sub = nh.subscribe<airo_px4::FSMInfo>("/airo_px4/fsm_info",10,fsm_info_cb);
     ros::Publisher command_pub = nh.advertise<airo_px4::Reference>("/airo_px4/setpoint",10);
@@ -68,13 +70,23 @@ int main(int argc, char **argv)
     }
 
     for (int i = 0; i < 41; i++){
-        target_pose_2.ref_pose[i].position.x = 0;
-        target_pose_2.ref_pose[i].position.y = 0.5;
+        target_pose_2.ref_pose[i].position.x = object_pose.pose.position.x;
+        target_pose_2.ref_pose[i].position.y = object_pose.pose.position.y;
         target_pose_2.ref_pose[i].position.z = 1;
         target_pose_2.ref_pose[i].orientation.w = 1;
         target_pose_2.ref_pose[i].orientation.x = 0.0;
         target_pose_2.ref_pose[i].orientation.y = 0;
         target_pose_2.ref_pose[i].orientation.z = 0.0;
+    }
+
+    for (int i = 0; i < 41; i++){
+        target_pose_3.ref_pose[i].position.x = 1;
+        target_pose_3.ref_pose[i].position.y = 1;
+        target_pose_3.ref_pose[i].position.z = 1;
+        target_pose_3.ref_pose[i].orientation.w = 1;
+        target_pose_3.ref_pose[i].orientation.x = 0.0;
+        target_pose_3.ref_pose[i].orientation.y = 0.0;
+        target_pose_3.ref_pose[i].orientation.z = 0.0;
     }
 
     while(ros::ok()){
@@ -108,19 +120,42 @@ int main(int argc, char **argv)
                             target_1_reached = true;
                         }
                     }
-                    else{
+                    if(target_1_reached && !target_2_reached){
                         target_pose_2.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_2);
-                        std::cout<<"pose 2"<<std::endl;
+                        std::cout<<"hover over the target object"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.5){
-                            state = LAND;
+                            target_2_reached = true;
                         }
                     }
+                    if (target_2_reached){
+                        target_pose_3.header.stamp = ros::Time::now();
+                        command_pub.publish(target_pose_3);
+                        std::cout<<"back to home"<<std::endl;
+                        if(abs(local_pose.pose.position.x - target_pose_3.ref_pose[0].position.x)
+                         + abs(local_pose.pose.position.y - target_pose_3.ref_pose[0].position.y)
+                         + abs(local_pose.pose.position.z - target_pose_3.ref_pose[0].position.z) < 0.5){
+                            state = LAND;
+                            std::cout<<"landing"<<std::endl;
+                        }
+                    }
+                        
+                    }
+                    // else{
+                    //     target_pose_2.header.stamp = ros::Time::now();
+                    //     command_pub.publish(target_pose_2);
+                    //     std::cout<<"pose 2"<<std::endl;
+                    //     if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x)
+                    //      + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
+                    //      + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.5){
+                    //         state = LAND;
+                    //     }
+                    // }
                 }
                 break;
-            }
+            
 
             case LAND:{
                 if(fsm_info.is_waiting_for_command){

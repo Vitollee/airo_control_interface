@@ -6,7 +6,6 @@
 #include <airo_px4/FSMInfo.h>
 #include <airo_px4/TakeoffLandTrigger.h>
 #include <airo_px4/Reference.h>
-#include <mavros_msgs/OverrideRCIn.h>
 
 geometry_msgs::PoseStamped local_pose, object_pose, current_object_pose;
 airo_px4::Reference target_pose_1;
@@ -16,11 +15,6 @@ airo_px4::FSMInfo fsm_info;
 airo_px4::TakeoffLandTrigger takeoff_land_trigger;
 bool target_1_reached = false;
 bool target_2_reached = false; 
-
-//Parameters of gripper
-int open_pwm = 1000, close_pwm = 1950;
-mavros_msgs::OverrideRCIn override_rc_in;
-int counter = 0, min_count = 200;
 
 enum State{
     TAKEOFF,
@@ -59,14 +53,11 @@ int main(int argc, char **argv)
     ros::Publisher command_pub = nh.advertise<airo_px4::Reference>("/airo_px4/setpoint",10);
     // ros::Publisher command_pub = nh.advertise<geometry_msgs::PoseStamped>("/airo_px4/position_setpoint",10);
     ros::Publisher takeoff_land_pub = nh.advertise<airo_px4::TakeoffLandTrigger>("/airo_px4/takeoff_land_trigger",10);
-    ros::Publisher override_pub = nh.advertise<mavros_msgs::OverrideRCIn>("/mavros/rc/override",20);
 
     target_pose_1.ref_pose.resize(41);
     target_pose_1.ref_twist.resize(41);
     target_pose_2.ref_pose.resize(41);
     target_pose_2.ref_twist.resize(41);
-    target_pose_3.ref_pose.resize(41);
-    target_pose_3.ref_twist.resize(41);
 
     for (int i = 0; i < 41; i++){
         target_pose_1.ref_pose[i].position.x = 1;
@@ -81,7 +72,7 @@ int main(int argc, char **argv)
     for (int i = 0; i < 41; i++){
         target_pose_2.ref_pose[i].position.x = object_pose.pose.position.x;
         target_pose_2.ref_pose[i].position.y = object_pose.pose.position.y;
-        target_pose_2.ref_pose[i].position.z = 0.5;
+        target_pose_2.ref_pose[i].position.z = 1;
         target_pose_2.ref_pose[i].orientation.w = 1;
         target_pose_2.ref_pose[i].orientation.x = 0.0;
         target_pose_2.ref_pose[i].orientation.y = 0;
@@ -123,8 +114,6 @@ int main(int argc, char **argv)
                         target_pose_1.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_1);
                         std::cout<<"pose 1"<<std::endl;
-                        override_rc_in.channels[9] = open_pwm; 
-                        override_pub.publish(override_rc_in);
                         if(abs(local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z) < 0.5){
@@ -139,8 +128,6 @@ int main(int argc, char **argv)
                          + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.5){
                             target_2_reached = true;
-                            override_rc_in.channels[9] = close_pwm; 
-                            override_pub.publish(override_rc_in);
                         }
                     }
                     if (target_2_reached){

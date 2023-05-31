@@ -80,6 +80,11 @@ target_link_libraries(grasp_test
   ${catkin_LIBRARIES}
 )
 
+add_executable(hover_test src/hover_test.cpp)
+target_link_libraries(hover_test
+  ${catkin_LIBRARIES}
+)
+
 add_executable(system_identification src/system_identification.cpp)
 target_link_libraries(system_identification
   ${catkin_LIBRARIES}

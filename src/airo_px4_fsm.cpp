@@ -5,9 +5,10 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     state_fsm = RC_MANUAL;
 
     // ROS Sub & Pub
-    pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,&AIRO_PX4_FSM::pose_cb,this);
-    //pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose",100,&AIRO_PX4_FSM::pose_cb,this);
-    twist_sub = nh.subscribe<geometry_msgs::TwistStamped>("/mavros/local_position/velocity_local",100,&AIRO_PX4_FSM::twist_cb,this);
+    // pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,&AIRO_PX4_FSM::pose_cb,this);
+    pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose",100,&AIRO_PX4_FSM::pose_cb,this);
+    // twist_sub = nh.subscribe<geometry_msgs::TwistStamped>("/mavros/local_position/velocity_local",100,&AIRO_PX4_FSM::twist_cb,this);
+    twist_sub = nh.subscribe<geometry_msgs::TwistStamped>("/mavros/vision_speed/speed_vector",100,&AIRO_PX4_FSM::twist_cb,this);
     state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",10,&AIRO_PX4_FSM::state_cb,this);
     extended_state_sub = nh.subscribe<mavros_msgs::ExtendedState>("/mavros/extended_state",10,&AIRO_PX4_FSM::extended_state_cb,this);
     rc_input_sub = nh.subscribe<mavros_msgs::RCIn>("/mavros/rc/in",10,&AIRO_PX4_FSM::rc_input_cb,this);
@@ -324,10 +325,10 @@ bool AIRO_PX4_FSM::toggle_offboard(bool flag){
 
 	if (flag){
 		previous_state = current_state;
-		if (previous_state.mode == "GUIDED"){
+		if (previous_state.mode == "GUIDED_NOGPS"){
             previous_state.mode = "MANUAL"; // Not allowed
         }
-		offboard_setmode.request.custom_mode = "GUIDED";
+		offboard_setmode.request.custom_mode = "GUIDED_NOGPS";
 
         // Start by streaming setpoints
         for(int i = 10; ros::ok() && i > 0; --i){

@@ -30,6 +30,8 @@ class AIRO_PX4_FSM{
 	};
 
 	// Parameters
+	std::string POSE_TOPIC;
+	std::string TWIST_TOPIC;
 	double MESSAGE_TIMEOUT;
 	double MOTOR_SPEEDUP_TIME;
 	double TAKEOFF_HEIGHT;
@@ -40,9 +42,6 @@ class AIRO_PX4_FSM{
 	bool CHECK_SAFETY_VOLUMN;
 	std::vector<double> SAFETY_VOLUMN; // min_x max_x min_y max_y min_z max_z
 	bool WITHOUT_RC;
-	double HOVER_THRUST;
-	double TAU_PHI;
-	double TAU_THETA;
 
 	// Variables
 	STATE_FSM state_fsm;
@@ -89,7 +88,7 @@ class AIRO_PX4_FSM{
 	mavros_msgs::ExtendedState current_extended_state;
 
 	//Controller
-	QUADROTOR_MPC controller;	
+	QUADROTOR_MPC controller;
 
 	public:
 

@@ -4,25 +4,9 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     // Initialize
     state_fsm = RC_MANUAL;
 
-    // ROS Sub & Pub
-    // pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,&AIRO_PX4_FSM::pose_cb,this);
-    pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose",100,&AIRO_PX4_FSM::pose_cb,this);
-    // twist_sub = nh.subscribe<geometry_msgs::TwistStamped>("/mavros/local_position/velocity_local",100,&AIRO_PX4_FSM::twist_cb,this);
-    twist_sub = nh.subscribe<geometry_msgs::TwistStamped>("/mavros/vision_speed/speed_vector",100,&AIRO_PX4_FSM::twist_cb,this);
-    state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",10,&AIRO_PX4_FSM::state_cb,this);
-    extended_state_sub = nh.subscribe<mavros_msgs::ExtendedState>("/mavros/extended_state",10,&AIRO_PX4_FSM::extended_state_cb,this);
-    rc_input_sub = nh.subscribe<mavros_msgs::RCIn>("/mavros/rc/in",10,&AIRO_PX4_FSM::rc_input_cb,this);
-    command_sub = nh.subscribe<airo_px4::Reference>("/airo_px4/setpoint",50,&AIRO_PX4_FSM::external_command_cb,this);
-    takeoff_land_sub = nh.subscribe<airo_px4::TakeoffLandTrigger>("/airo_px4/takeoff_land_trigger",10,&AIRO_PX4_FSM::takeoff_land_cb,this);
-    setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",20);
-    fsm_info_pub = nh.advertise<airo_px4::FSMInfo>("/airo_px4/fsm_info",10);
-
-    // ROS Services
-    setmode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
-    arm_srv = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
-    reboot_srv = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
-
     // ROS Parameters
+    nh.getParam("airo_px4_node/pose_topic",POSE_TOPIC);
+    nh.getParam("airo_px4_node/twist_topic",TWIST_TOPIC);
     nh.getParam("airo_px4_node/message_timeout",MESSAGE_TIMEOUT);
     nh.getParam("airo_px4_node/motor_speedup_time",MOTOR_SPEEDUP_TIME);
     nh.getParam("airo_px4_node/takeoff_height",TAKEOFF_HEIGHT);
@@ -33,9 +17,10 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_px4_node/check_safety_volumn",CHECK_SAFETY_VOLUMN);
     nh.getParam("airo_px4_node/safety_volumn",SAFETY_VOLUMN); // min_x max_x min_y max_y min_z max_z
     nh.getParam("airo_px4_node/without_rc",WITHOUT_RC);
-    nh.getParam("airo_px4_node/hover_thrust",HOVER_THRUST);
-    nh.getParam("airo_px4_node/tau_phi",TAU_PHI);
-    nh.getParam("airo_px4_node/tau_theta",TAU_THETA);
+    nh.getParam("airo_px4_node/hover_thrust",solver_param.hover_thrust);
+    nh.getParam("airo_px4_node/tau_phi",solver_param.tau_phi);
+    nh.getParam("airo_px4_node/tau_theta",solver_param.tau_theta);
+    nh.getParam("airo_px4_node/tau_psi",solver_param.tau_psi);
 
     nh.getParam("airo_px4_node/throttle_channel",rc_param.THROTTLE_CHANNEL);
     nh.getParam("airo_px4_node/yaw_channel",rc_param.YAW_CHANNEL);
@@ -50,13 +35,26 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_px4_node/reverse_roll",rc_param.REVERSE_ROLL);
     nh.getParam("airo_px4_node/switch_threshold",rc_param.SWITCH_THRESHOLD);
     nh.getParam("airo_px4_node/joystick_deadzone",rc_param.JOYSTICK_DEADZONE);
-    nh.getParam("airo_px4_node/check_cetered_threshold",rc_param.CHECK_CENTERED_THRESHOLD);
+    nh.getParam("airo_px4_node/check_centered_threshold",rc_param.CHECK_CENTERED_THRESHOLD);
 
+    // ROS Sub & Pub
+    pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,100,&AIRO_PX4_FSM::pose_cb,this);
+    twist_sub = nh.subscribe<geometry_msgs::TwistStamped>(TWIST_TOPIC,100,&AIRO_PX4_FSM::twist_cb,this);
+    state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",10,&AIRO_PX4_FSM::state_cb,this);
+    extended_state_sub = nh.subscribe<mavros_msgs::ExtendedState>("/mavros/extended_state",10,&AIRO_PX4_FSM::extended_state_cb,this);
+    rc_input_sub = nh.subscribe<mavros_msgs::RCIn>("/mavros/rc/in",10,&AIRO_PX4_FSM::rc_input_cb,this);
+    command_sub = nh.subscribe<airo_px4::Reference>("/airo_px4/setpoint",50,&AIRO_PX4_FSM::external_command_cb,this);
+    takeoff_land_sub = nh.subscribe<airo_px4::TakeoffLandTrigger>("/airo_px4/takeoff_land_trigger",10,&AIRO_PX4_FSM::takeoff_land_cb,this);
+    setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",20);
+    fsm_info_pub = nh.advertise<airo_px4::FSMInfo>("/airo_px4/fsm_info",10);
+
+    // ROS Services
+    setmode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
+    arm_srv = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
+    reboot_srv = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
+
+    // Init
     rc_input.set_rc_param(rc_param);
-    solver_param.hover_thrust = HOVER_THRUST;
-    solver_param.tau_phi = TAU_PHI;
-    solver_param.tau_theta = TAU_THETA;
-
     reference_init();
 }
 
@@ -388,7 +386,7 @@ bool AIRO_PX4_FSM::toggle_arm(bool flag){
 void AIRO_PX4_FSM::get_motor_speedup(){
     while(ros::ok() && (current_time - takeoff_land_time).toSec() < MOTOR_SPEEDUP_TIME){
         double delta_t = (current_time - takeoff_land_time).toSec();
-	    double ref_thrust = (delta_t/MOTOR_SPEEDUP_TIME)*HOVER_THRUST*0.6 + 0.005;
+	    double ref_thrust = (delta_t/MOTOR_SPEEDUP_TIME)*solver_param.hover_thrust*0.6 + 0.005;
 
         attitude_target.thrust = ref_thrust;
         attitude_target.orientation.w = takeoff_land_pose.pose.orientation.w;
@@ -433,14 +431,9 @@ void AIRO_PX4_FSM::set_takeoff_land_ref(const double speed){
 	set_ref(takeoff_land_ref);
 }
 
-// To add yaw control
 void AIRO_PX4_FSM::set_ref_with_rc(){
     current_time = ros::Time::now();
     double delta_t = (current_time - last_hover_time).toSec();
-    // Eigen::Vector3d ref_rc(3);
-    // ref_rc(0) = ref(0) + rc_input.channel[rc_param.PITCH_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_PITCH ? -1 : 1);
-    // ref_rc(1) = ref(1) - rc_input.channel[rc_param.ROLL_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_ROLL ? -1 : 1);
-    // ref_rc(2) = ref(2) + rc_input.channel[rc_param.THROTTLE_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_THROTTLE ? -1 : 1);
     geometry_msgs::PoseStamped rc_ref;
     double rc_psi, mpc_psi;
 
@@ -565,21 +558,21 @@ geometry_msgs::Point AIRO_PX4_FSM::check_safety_volumn(const geometry_msgs::Poin
 
         if(ref_point.x < SAFETY_VOLUMN[0]){ // x_ref < x_min
             safe_point.x = SAFETY_VOLUMN[0];
-            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] X command too large!");
+            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] X command too small!");
         }
         else if (ref_point.x > SAFETY_VOLUMN[1]){ // x_ref > x_max
             safe_point.x = SAFETY_VOLUMN[1];
-            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] X command too small!");
+            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] X command too large!");
         }
         else safe_point.x = ref_point.x; // x_min < x_ref < x_max
 
         if(ref_point.y < SAFETY_VOLUMN[2]){ // y_ref < y_min
             safe_point.y = SAFETY_VOLUMN[2];
-            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] Y command too large!");
-        }
-        else if (ref_point.x > SAFETY_VOLUMN[3]){ // y_ref > y_max
-            safe_point.y = SAFETY_VOLUMN[3];
             ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] Y command too small!");
+        }
+        else if (ref_point.y > SAFETY_VOLUMN[3]){ // y_ref > y_max
+            safe_point.y = SAFETY_VOLUMN[3];
+            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] Y command too large!");
         }
         else safe_point.y = ref_point.y; // y_min < y_ref < y_max
 

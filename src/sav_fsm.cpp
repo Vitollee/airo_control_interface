@@ -23,7 +23,7 @@ bool target_4_reached = false;
 bool target_5_reached = false;
 
 //Parameters of gripper
-int open_pwm = 1000, close_pwm = 1950;
+int open_pwm = 1950, close_pwm = 1050;
 mavros_msgs::OverrideRCIn override_rc_in;
 int counter = 0, min_count = 200;
 

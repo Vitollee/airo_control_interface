@@ -1,7 +1,7 @@
 {
-    "acados_include_path": "/home/jeremy/acados/include",
-    "acados_lib_path": "/home/jeremy/acados/lib",
-    "code_export_directory": "/home/jeremy/airo_px4_ws/src/airo_px4/scripts/c_generated_code",
+    "acados_include_path": "/home/athena/acados/include",
+    "acados_lib_path": "/home/athena/acados/lib",
+    "code_export_directory": "/home/athena/airo_px4_ws/src/airo_px4/scripts/c_generated_code",
     "constraints": {
         "C": [],
         "C_e": [],
@@ -550,8 +550,8 @@
         "zu_e": []
     },
     "cython_include_dirs": [
-        "/home/jeremy/.local/lib/python3.6/site-packages/numpy/core/include",
-        "/usr/include/python3.6m"
+        "/home/athena/.local/lib/python3.8/site-packages/numpy/core/include",
+        "/usr/include/python3.8"
     ],
     "dims": {
         "N": 40,

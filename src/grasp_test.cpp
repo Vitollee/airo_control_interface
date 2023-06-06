@@ -18,7 +18,7 @@ bool target_1_reached = false;
 bool target_2_reached = false; 
 
 //Parameters of gripper
-int open_pwm = 1000, close_pwm = 1950;
+int open_pwm = 1050, close_pwm = 1950;
 mavros_msgs::OverrideRCIn override_rc_in;
 int counter = 0, min_count = 200;
 
@@ -81,7 +81,7 @@ int main(int argc, char **argv)
     for (int i = 0; i < 41; i++){
         target_pose_2.ref_pose[i].position.x = object_pose.pose.position.x;
         target_pose_2.ref_pose[i].position.y = object_pose.pose.position.y;
-        target_pose_2.ref_pose[i].position.z = 0.5;
+        target_pose_2.ref_pose[i].position.z = 0.3;
         target_pose_2.ref_pose[i].orientation.w = 1;
         target_pose_2.ref_pose[i].orientation.x = 0.0;
         target_pose_2.ref_pose[i].orientation.y = 0;

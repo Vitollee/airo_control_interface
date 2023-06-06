@@ -58,6 +58,7 @@ int main(int argc, char **argv)
     // ros::Publisher command_pub = nh.advertise<geometry_msgs::PoseStamped>("/airo_px4/position_setpoint",10);
     ros::Publisher takeoff_land_pub = nh.advertise<airo_px4::TakeoffLandTrigger>("/airo_px4/takeoff_land_trigger",10);
     ros::Publisher override_pub = nh.advertise<mavros_msgs::OverrideRCIn>("/mavros/rc/override",20);
+    
 
     target_pose_1.ref_pose.resize(41);
     target_pose_1.ref_twist.resize(41);
@@ -145,6 +146,8 @@ int main(int argc, char **argv)
                     if(!target_1_reached){
                         target_pose_1.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_1);
+                        override_rc_in.channels[9] = open_pwm; 
+                        override_pub.publish(override_rc_in);
                         std::cout<<"pose 1"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y)
@@ -168,9 +171,7 @@ int main(int argc, char **argv)
                             target_2_reached = true;
                         }
                     }
-                    if (target_2_reached){
-
-                    }
+                    
                     if(target_2_reached && !target_3_reached){
                         target_pose_3.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_3);
@@ -206,6 +207,8 @@ int main(int argc, char **argv)
                     if(target_4_reached && !target_5_reached){
                         target_pose_5.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_5);
+                        override_rc_in.channels[9] = open_pwm; 
+                        override_pub.publish(override_rc_in);
                         std::cout<<"pose 5"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_5.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_5.ref_pose[0].position.y)

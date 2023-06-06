@@ -100,3 +100,32 @@ Run example mission node
 ```
 rosrun airo_px4 example_mission_node
 ```
+
+## Flight test in VICON room
+Start mavros connection
+```
+roscd airo_px4/launch
+roslaunch mavros_ardu.launch
+```
+
+Start vrpn connection (in a new terminal)
+```
+roscd airo_px4/launch
+roslaunch vicon.launch
+```
+
+Increase mavsys rate to at lease 50 hz (in a new terminal)
+```
+rosrun mavros mavsys rate --all 50
+```
+
+Start flight test in RC manual mode (in a new terminal)
+```
+roscd airo_px4/launch
+roslaunch airo_px4 vicon_fsm.launch 
+```
+Switch to POS_COMMAND mode from RC manual mode (in a new terminal)
+```
+rosrun airo_px4 example_mission_node
+```
+

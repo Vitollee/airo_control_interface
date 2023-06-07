@@ -44,6 +44,7 @@ void object_pose_cb(const geometry_msgs::PoseStamped::ConstPtr& object_pose){
     current_object_pose.pose.position.x = object_pose->pose.position.x;
     current_object_pose.pose.position.y = object_pose->pose.position.y;
     current_object_pose.pose.position.z = object_pose->pose.position.z;   
+    //object_pose = *msg;  
 }
 
 int main(int argc, char **argv)
@@ -54,7 +55,7 @@ int main(int argc, char **argv)
     State state = TAKEOFF;
 
     ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
-    ros::Subscriber object_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/vrpn_client_node/gh034_sav_rec/pose", 10, object_pose_cb);
+    ros::Subscriber object_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/vrpn_client_node/gh034_sav_cylinder/pose", 100, object_pose_cb);
     //ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose",100,pose_cb);
     ros::Subscriber fsm_info_sub = nh.subscribe<airo_px4::FSMInfo>("/airo_px4/fsm_info",10,fsm_info_cb);
     ros::Publisher command_pub = nh.advertise<airo_px4::Reference>("/airo_px4/setpoint",10);
@@ -70,8 +71,8 @@ int main(int argc, char **argv)
     target_pose_3.ref_twist.resize(41);
 
     for (int i = 0; i < 41; i++){
-        target_pose_1.ref_pose[i].position.x = 1;
-        target_pose_1.ref_pose[i].position.y = 1;
+        target_pose_1.ref_pose[i].position.x = 0;
+        target_pose_1.ref_pose[i].position.y = 0;
         target_pose_1.ref_pose[i].position.z = 1;
         target_pose_1.ref_pose[i].orientation.w = 1;
         target_pose_1.ref_pose[i].orientation.x = 0.0;
@@ -80,8 +81,8 @@ int main(int argc, char **argv)
     }
 
     for (int i = 0; i < 41; i++){
-        target_pose_2.ref_pose[i].position.x = object_pose.pose.position.x;
-        target_pose_2.ref_pose[i].position.y = object_pose.pose.position.y;
+        target_pose_2.ref_pose[i].position.x = current_object_pose.pose.position.x;
+        target_pose_2.ref_pose[i].position.y = current_object_pose.pose.position.y;
         target_pose_2.ref_pose[i].position.z = 1;
         target_pose_2.ref_pose[i].orientation.w = 1;
         target_pose_2.ref_pose[i].orientation.x = 0.0;
@@ -90,8 +91,8 @@ int main(int argc, char **argv)
     }
 
     for (int i = 0; i < 41; i++){
-        target_pose_3.ref_pose[i].position.x = 1;
-        target_pose_3.ref_pose[i].position.y = 1;
+        target_pose_3.ref_pose[i].position.x = 0;
+        target_pose_3.ref_pose[i].position.y = 0;
         target_pose_3.ref_pose[i].position.z = 1;
         target_pose_3.ref_pose[i].orientation.w = 1;
         target_pose_3.ref_pose[i].orientation.x = 0.0;

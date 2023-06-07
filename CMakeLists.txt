@@ -85,6 +85,11 @@ target_link_libraries(hover_test
   ${catkin_LIBRARIES}
 )
 
+add_executable(sub_vrpn src/sub_vrpn.cpp)
+target_link_libraries(sub_vrpn
+  ${catkin_LIBRARIES}
+)
+
 add_executable(system_identification src/system_identification.cpp)
 target_link_libraries(system_identification
   ${catkin_LIBRARIES}

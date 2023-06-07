@@ -141,8 +141,8 @@ int main(int argc, char **argv)
                         override_rc_in.channels[9] = open_pwm; 
                         override_pub.publish(override_rc_in);
                         std::cout<<"hover over the target object"<<std::endl;
-                        if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x)
-                         + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
+                        if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[20].position.x)
+                         + abs(local_pose.pose.position.y - target_pose_2.ref_pose[20].position.y)
                          + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.5){
                             target_2_reached = true;
                         }

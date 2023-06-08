@@ -17,7 +17,7 @@ airo_px4::FSMInfo fsm_info;
 airo_px4::TakeoffLandTrigger takeoff_land_trigger;
 bool target_1_reached = false;
 bool target_2_reached = false; 
-
+double target_x, target_y;
 //Parameters of gripper
 int open_pwm = 1050, close_pwm = 1950;
 mavros_msgs::OverrideRCIn override_rc_in;
@@ -81,10 +81,8 @@ int main(int argc, char **argv)
     }
 
     for (int i = 0; i < 41; i++){
-        //target_pose_2.ref_pose[i].position.x = current_object_pose.pose.position.x;
-        target_pose_2.ref_pose[i].position.x = -0.953151;
-        //target_pose_2.ref_pose[i].position.y = current_object_pose.pose.position.y;
-        target_pose_2.ref_pose[i].position.y = 0.721972;
+        target_pose_2.ref_pose[i].position.x = current_object_pose.pose.position.x;
+        target_pose_2.ref_pose[i].position.y = current_object_pose.pose.position.y;
         target_pose_2.ref_pose[i].position.z = 1;
         target_pose_2.ref_pose[i].orientation.w = 1;
         target_pose_2.ref_pose[i].orientation.x = 0.0;
@@ -93,8 +91,8 @@ int main(int argc, char **argv)
     }
 
     for (int i = 0; i < 41; i++){
-        target_pose_3.ref_pose[i].position.x = -0.953151;
-        target_pose_3.ref_pose[i].position.y = 0.721972;
+        target_pose_3.ref_pose[i].position.x = target_x;
+        target_pose_3.ref_pose[i].position.y = target_y;
         target_pose_3.ref_pose[i].position.z = 0.3;
         target_pose_3.ref_pose[i].orientation.w = 1;
         target_pose_3.ref_pose[i].orientation.x = 0.0;
@@ -143,12 +141,8 @@ int main(int argc, char **argv)
                         override_rc_in.channels[9] = open_pwm; 
                         override_pub.publish(override_rc_in);
                         std::cout<<"hover over the target object"<<std::endl;
-                        std::cout<<"current x: "<<current_object_pose.pose.position.x<<std::endl;
-                        std::cout<<"current y: "<<current_object_pose.pose.position.y<<std::endl;
-                        std::cout<<"x: "<<target_pose_2.ref_pose[40].position.x<<std::endl;
-                        std::cout<<"y: "<<target_pose_2.ref_pose[40].position.y<<std::endl;
-                        if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[20].position.x)
-                         + abs(local_pose.pose.position.y - target_pose_2.ref_pose[20].position.y)
+                        if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x)
+                         + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.15){
                             target_2_reached = true;
                         }

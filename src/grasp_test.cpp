@@ -69,8 +69,8 @@ int main(int argc, char **argv)
     target_pose_3.ref_twist.resize(41);
 
     for (int i = 0; i < 41; i++){
-        target_pose_1.ref_pose[i].position.x = 1;
-        target_pose_1.ref_pose[i].position.y = 1;
+        target_pose_1.ref_pose[i].position.x = -0.875;
+        target_pose_1.ref_pose[i].position.y = 0.724;
         target_pose_1.ref_pose[i].position.z = 1;
         target_pose_1.ref_pose[i].orientation.w = 1;
         target_pose_1.ref_pose[i].orientation.x = 0.0;
@@ -79,9 +79,9 @@ int main(int argc, char **argv)
     }
 
     for (int i = 0; i < 41; i++){
-        target_pose_2.ref_pose[i].position.x = current_object_pose.pose.position.x;
-        target_pose_2.ref_pose[i].position.y = current_object_pose.pose.position.y;
-        target_pose_2.ref_pose[i].position.z = 0.3;
+        target_pose_2.ref_pose[i].position.x = -0.875;
+        target_pose_2.ref_pose[i].position.y = 0.724;
+        target_pose_2.ref_pose[i].position.z = 0.28;
         target_pose_2.ref_pose[i].orientation.w = 1;
         target_pose_2.ref_pose[i].orientation.x = 0.0;
         target_pose_2.ref_pose[i].orientation.y = 0;
@@ -89,8 +89,8 @@ int main(int argc, char **argv)
     }
 
     for (int i = 0; i < 41; i++){
-        target_pose_3.ref_pose[i].position.x = 1;
-        target_pose_3.ref_pose[i].position.y = 1;
+        target_pose_3.ref_pose[i].position.x = -0.875;
+        target_pose_3.ref_pose[i].position.y = 0.724;
         target_pose_3.ref_pose[i].position.z = 1;
         target_pose_3.ref_pose[i].orientation.w = 1;
         target_pose_3.ref_pose[i].orientation.x = 0.0;
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
                     if(!target_1_reached){
                         target_pose_1.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_1);
-                        std::cout<<"pose 1"<<std::endl;
+                        std::cout<<"hover at 1 meter"<<std::endl;
                         override_rc_in.channels[9] = open_pwm; 
                         override_pub.publish(override_rc_in);
                         if(abs(local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x)
@@ -134,7 +134,7 @@ int main(int argc, char **argv)
                     if(target_1_reached && !target_2_reached){
                         target_pose_2.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_2);
-                        std::cout<<"hover over the target object"<<std::endl;
+                        std::cout<<"hover at 0.3 meter"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.5){
@@ -147,11 +147,12 @@ int main(int argc, char **argv)
                         target_pose_3.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_3);
                         std::cout<<"back to home"<<std::endl;
+                        override_rc_in.channels[9] = close_pwm; 
+                        override_pub.publish(override_rc_in);
                         if(abs(local_pose.pose.position.x - target_pose_3.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_3.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_3.ref_pose[0].position.z) < 0.5){
-                            state = LAND;
-                            std::cout<<"landing"<<std::endl;
+                            std::cout<<"grasping & hovering"<<std::endl;
                         }
                     }
                         

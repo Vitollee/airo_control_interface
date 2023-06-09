@@ -9,7 +9,7 @@
 #include <mavros_msgs/OverrideRCIn.h>
 
 
-geometry_msgs::PoseStamped local_pose, object_pose, current_object_pose;
+geometry_msgs::PoseStamped local_pose, current_object_pose;
 airo_px4::Reference target_pose_1;
 airo_px4::Reference target_pose_2;
 airo_px4::Reference target_pose_3;
@@ -17,11 +17,10 @@ airo_px4::FSMInfo fsm_info;
 airo_px4::TakeoffLandTrigger takeoff_land_trigger;
 bool target_1_reached = false;
 bool target_2_reached = false; 
-double target_x, target_y;
+
 //Parameters of gripper
 int open_pwm = 1050, close_pwm = 1950;
 mavros_msgs::OverrideRCIn override_rc_in;
-int counter = 0, min_count = 200;
 
 enum State{
     TAKEOFF,
@@ -162,16 +161,6 @@ int main(int argc, char **argv)
                     }
                         
                     }
-                    // else{
-                    //     target_pose_2.header.stamp = ros::Time::now();
-                    //     command_pub.publish(target_pose_2);
-                    //     std::cout<<"pose 2"<<std::endl;
-                    //     if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x)
-                    //      + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
-                    //      + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.5){
-                    //         state = LAND;
-                    //     }
-                    // }
                 }
                 break;
             

@@ -127,7 +127,7 @@ int main(int argc, char **argv)
                         command_pub.publish(target_pose_1);
                         override_rc_in.channels[9] = open_pwm; 
                         override_pub.publish(override_rc_in);
-                        std::cout<<"pose 1"<<std::endl;
+                        std::cout<<"Pose 1: [1, 1, 0]"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z) < 0.5){
@@ -139,7 +139,7 @@ int main(int argc, char **argv)
                         command_pub.publish(target_pose_2);
                         override_rc_in.channels[9] = open_pwm; 
                         override_pub.publish(override_rc_in);
-                        std::cout<<"hover over the target object"<<std::endl;
+                        std::cout<<"hover over the target object, AGL = 1m"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.15){
@@ -151,7 +151,7 @@ int main(int argc, char **argv)
                         command_pub.publish(target_pose_3);
                         override_rc_in.channels[9] = open_pwm; 
                         override_pub.publish(override_rc_in);
-                        std::cout<<"back to home"<<std::endl;
+                        std::cout<<"Approaching target object"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_3.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_3.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_3.ref_pose[0].position.z) < 0.5){

@@ -40,9 +40,9 @@ int main(int argc, char **argv)
     while(ros::ok()){
         //Get current object pose as initial object pose
         pose.pose.position.x = current_object_pose.pose.position.x;
-        pose.pose.position.y = current_object_pose.pose.position.y;
+        pose.pose.position.y = current_object_pose.pose.position.y + 0.1;
         pose.pose.position.z = current_object_pose.pose.position.z;
-        
+
         std::cout<<"x_current_object_pose: "<< current_object_pose.pose.position.x<<std::endl;
         std::cout<<"y_current_object_pose: "<< current_object_pose.pose.position.y<<std::endl;
         std::cout<<"x_object_pose: "<< pose.pose.position.x<<std::endl;

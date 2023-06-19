@@ -87,8 +87,8 @@ int main(int argc, char **argv)
         object_pose.pose.position.z = current_object_pose.pose.position.z;
         
         for (int i = 0; i < 41; i++){
-            target_pose_2.ref_pose[i].position.x = object_pose.pose.position.x;
-            target_pose_2.ref_pose[i].position.y = object_pose.pose.position.y;
+            target_pose_2.ref_pose[i].position.x = object_pose.pose.position.x+0.05;
+            target_pose_2.ref_pose[i].position.y = object_pose.pose.position.y-0.2;
             target_pose_2.ref_pose[i].position.z = 1;
             target_pose_2.ref_pose[i].orientation.w = 1;
             target_pose_2.ref_pose[i].orientation.x = 0.0;
@@ -97,9 +97,9 @@ int main(int argc, char **argv)
         }
 
         for (int i = 0; i < 41; i++){
-                target_pose_3.ref_pose[i].position.x = object_pose.pose.position.x;
-                target_pose_3.ref_pose[i].position.y = object_pose.pose.position.y;
-                target_pose_3.ref_pose[i].position.z = 0.3;
+                target_pose_3.ref_pose[i].position.x = object_pose.pose.position.x+0.05;
+                target_pose_3.ref_pose[i].position.y = object_pose.pose.position.y-0.2;
+                target_pose_3.ref_pose[i].position.z = 0.12;
                 target_pose_3.ref_pose[i].orientation.w = 1;
                 target_pose_3.ref_pose[i].orientation.x = 0.0;
                 target_pose_3.ref_pose[i].orientation.y = 0.0;
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
                         command_pub.publish(target_pose_1);
                         override_rc_in.channels[9] = open_pwm; 
                         override_pub.publish(override_rc_in);
-                        std::cout<<"Pose 1: [1, 1, 0]"<<std::endl;
+                        std::cout<<"Pose 1"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z) < 0.5){
@@ -149,8 +149,6 @@ int main(int argc, char **argv)
                         override_rc_in.channels[9] = open_pwm; 
                         override_pub.publish(override_rc_in);
                         std::cout<<"hover over the target object, AGL = 1m"<<std::endl;
-                        std::cout<<"x: " << target_pose_2.ref_pose[0].position.x<<std::endl;
-                        std::cout<<"y: " << target_pose_2.ref_pose[0].position.y<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.5){
@@ -165,8 +163,6 @@ int main(int argc, char **argv)
                         override_rc_in.channels[9] = open_pwm; 
                         override_pub.publish(override_rc_in);
                         std::cout<<"Approaching target object"<<std::endl;
-                        std::cout<<"x: " << target_pose_3.ref_pose[0].position.x<<std::endl;
-                        std::cout<<"y: " << target_pose_3.ref_pose[0].position.y<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_3.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_3.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_3.ref_pose[0].position.z) < 0.5){

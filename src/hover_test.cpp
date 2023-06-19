@@ -9,7 +9,7 @@
 #include <mavros_msgs/OverrideRCIn.h>
 
 
-geometry_msgs::PoseStamped local_pose, current_object_pose;
+geometry_msgs::PoseStamped local_pose, object_pose, current_object_pose;
 airo_px4::Reference target_pose_1;
 airo_px4::Reference target_pose_2;
 airo_px4::Reference target_pose_3;
@@ -43,7 +43,6 @@ void object_pose_cb(const geometry_msgs::PoseStamped::ConstPtr& object_pose){
     current_object_pose.pose.position.x = object_pose->pose.position.x;
     current_object_pose.pose.position.y = object_pose->pose.position.y;
     current_object_pose.pose.position.z = object_pose->pose.position.z;   
-    //object_pose = *msg;  
 }
 
 int main(int argc, char **argv)
@@ -70,8 +69,8 @@ int main(int argc, char **argv)
     target_pose_3.ref_twist.resize(41);
 
     for (int i = 0; i < 41; i++){
-        target_pose_1.ref_pose[i].position.x = 0;
-        target_pose_1.ref_pose[i].position.y = 0;
+        target_pose_1.ref_pose[i].position.x = 0.5;
+        target_pose_1.ref_pose[i].position.y = 0.5;
         target_pose_1.ref_pose[i].position.z = 1;
         target_pose_1.ref_pose[i].orientation.w = 1;
         target_pose_1.ref_pose[i].orientation.x = 0.0;
@@ -79,27 +78,34 @@ int main(int argc, char **argv)
         target_pose_1.ref_pose[i].orientation.z = 0.0;
     }
 
-    for (int i = 0; i < 41; i++){
-        target_pose_2.ref_pose[i].position.x = current_object_pose.pose.position.x;
-        target_pose_2.ref_pose[i].position.y = current_object_pose.pose.position.y;
-        target_pose_2.ref_pose[i].position.z = 1;
-        target_pose_2.ref_pose[i].orientation.w = 1;
-        target_pose_2.ref_pose[i].orientation.x = 0.0;
-        target_pose_2.ref_pose[i].orientation.y = 0;
-        target_pose_2.ref_pose[i].orientation.z = 0.0;
-    }
-
-    for (int i = 0; i < 41; i++){
-        target_pose_3.ref_pose[i].position.x = current_object_pose.pose.position.x;
-        target_pose_3.ref_pose[i].position.y = current_object_pose.pose.position.y;
-        target_pose_3.ref_pose[i].position.z = 0.3;
-        target_pose_3.ref_pose[i].orientation.w = 1;
-        target_pose_3.ref_pose[i].orientation.x = 0.0;
-        target_pose_3.ref_pose[i].orientation.y = 0.0;
-        target_pose_3.ref_pose[i].orientation.z = 0.0;
-    }
+  
 
     while(ros::ok()){
+        //Get current object pose as initial object pose
+        object_pose.pose.position.x = current_object_pose.pose.position.x;
+        object_pose.pose.position.y = current_object_pose.pose.position.y;
+        object_pose.pose.position.z = current_object_pose.pose.position.z;
+        
+        for (int i = 0; i < 41; i++){
+            target_pose_2.ref_pose[i].position.x = object_pose.pose.position.x;
+            target_pose_2.ref_pose[i].position.y = object_pose.pose.position.y;
+            target_pose_2.ref_pose[i].position.z = 1;
+            target_pose_2.ref_pose[i].orientation.w = 1;
+            target_pose_2.ref_pose[i].orientation.x = 0.0;
+            target_pose_2.ref_pose[i].orientation.y = 0;
+            target_pose_2.ref_pose[i].orientation.z = 0.0;
+        }
+
+        for (int i = 0; i < 41; i++){
+                target_pose_3.ref_pose[i].position.x = object_pose.pose.position.x;
+                target_pose_3.ref_pose[i].position.y = object_pose.pose.position.y;
+                target_pose_3.ref_pose[i].position.z = 0.3;
+                target_pose_3.ref_pose[i].orientation.w = 1;
+                target_pose_3.ref_pose[i].orientation.x = 0.0;
+                target_pose_3.ref_pose[i].orientation.y = 0.0;
+                target_pose_3.ref_pose[i].orientation.z = 0.0;
+        } 
+
         switch(state){
             case TAKEOFF:{
                 if(fsm_info.is_landed == true){
@@ -109,6 +115,8 @@ int main(int argc, char **argv)
                         takeoff_land_trigger.takeoff_land_trigger = true; // Takeoff
                         takeoff_land_trigger.header.stamp = ros::Time::now();
                         takeoff_land_pub.publish(takeoff_land_trigger);
+                        std::cout<<"target x at takeoff: " << target_pose_2.ref_pose[0].position.x<<std::endl;
+                        std::cout<<"target y at takeoff: " << target_pose_2.ref_pose[0].position.y<<std::endl;
                         ros::spinOnce();
                         ros::Duration(0.5).sleep();
                         if(fsm_info.is_waiting_for_command){
@@ -132,6 +140,7 @@ int main(int argc, char **argv)
                          + abs(local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z) < 0.5){
                             target_1_reached = true;
+                            std::cout<<"target 1 is finished"<<std::endl;
                         }
                     }
                     if(target_1_reached && !target_2_reached){
@@ -140,10 +149,14 @@ int main(int argc, char **argv)
                         override_rc_in.channels[9] = open_pwm; 
                         override_pub.publish(override_rc_in);
                         std::cout<<"hover over the target object, AGL = 1m"<<std::endl;
+                        std::cout<<"x: " << target_pose_2.ref_pose[0].position.x<<std::endl;
+                        std::cout<<"y: " << target_pose_2.ref_pose[0].position.y<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
-                         + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.15){
+                         + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.5){
                             target_2_reached = true;
+                            std::cout<<"target 2 is finished"<<std::endl;
+
                         }
                     }
                     if (target_2_reached){
@@ -152,11 +165,12 @@ int main(int argc, char **argv)
                         override_rc_in.channels[9] = open_pwm; 
                         override_pub.publish(override_rc_in);
                         std::cout<<"Approaching target object"<<std::endl;
+                        std::cout<<"x: " << target_pose_3.ref_pose[0].position.x<<std::endl;
+                        std::cout<<"y: " << target_pose_3.ref_pose[0].position.y<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_3.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_3.ref_pose[0].position.y)
                          + abs(local_pose.pose.position.z - target_pose_3.ref_pose[0].position.z) < 0.5){
-                            state = LAND;
-                            std::cout<<"landing"<<std::endl;
+                            std::cout<<"done"<<std::endl;
                         }
                     }
                         

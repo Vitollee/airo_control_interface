@@ -181,7 +181,7 @@ int main(int argc, char **argv){
     ros::Subscriber target_actuator_control_sub = nh.subscribe<mavros_msgs::ActuatorControl>("/mavros/target_actuator_control",100,target_actuator_control_cb);
     //ros::Publisher command_pub = nh.advertise<geometry_msgs::PoseStamped>("/mavros/setpoint_position/local",10);
     // ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
-    // ros::ServiceClient landing_client = nh.serviceClient<mavros_msgs::CommandTOL>("//cmd/land");
+    // ros::ServiceClient landing_client = nh.serviceClient<mavros_msgs::CommandTOL>("/mavros/cmd/land");
     // ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>("/mamavrosvros/set_mode");
 
     message_filters::Subscriber<geometry_msgs::PoseStamped> attitude_sub(nh,"/mavros/local_position/pose",10);
@@ -271,6 +271,7 @@ int main(int argc, char **argv){
                         ros::Duration(0.5).sleep();
                         if(fsm_info.is_waiting_for_command){
                             state = COMMAND;
+                            hover_thrust_id = true;
                             break;
                         }
                     }

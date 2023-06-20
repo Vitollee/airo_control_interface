@@ -90,6 +90,11 @@ target_link_libraries(sub_vrpn
   ${catkin_LIBRARIES}
 )
 
+add_executable(tracking src/tracking.cpp)
+target_link_libraries(tracking
+  ${catkin_LIBRARIES}
+)
+
 add_executable(system_identification src/system_identification.cpp)
 target_link_libraries(system_identification
   ${catkin_LIBRARIES}

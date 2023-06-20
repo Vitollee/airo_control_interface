@@ -110,7 +110,7 @@ bool target_reached(const geometry_msgs::PoseStamped& msg){
 }
 
 void update_x_maneuver(){
-    x_maneuver_pose.pose.position.x = takeoff_pose.pose.position.x + 1.5*sin(2*(ros::Time::now().toSec() - last_state_time.toSec()));
+    x_maneuver_pose.pose.position.x = takeoff_pose.pose.position.x + 1*sin(2*(ros::Time::now().toSec() - last_state_time.toSec()));
     x_maneuver_pose.pose.position.y = takeoff_pose.pose.position.y;
     x_maneuver_pose.pose.position.z = takeoff_pose.pose.position.z;
     x_maneuver_pose.pose.orientation.w = 1;
@@ -121,7 +121,7 @@ void update_x_maneuver(){
 
 void update_y_maneuver(){
     y_maneuver_pose.pose.position.x = takeoff_pose.pose.position.x;
-    y_maneuver_pose.pose.position.y = takeoff_pose.pose.position.y + 1.5*sin(2*(ros::Time::now().toSec() - last_state_time.toSec()));
+    y_maneuver_pose.pose.position.y = takeoff_pose.pose.position.y + 1*sin(2*(ros::Time::now().toSec() - last_state_time.toSec()));
     y_maneuver_pose.pose.position.z = takeoff_pose.pose.position.z;
     y_maneuver_pose.pose.orientation.w = 1;
     y_maneuver_pose.pose.orientation.x = 0;
@@ -297,6 +297,8 @@ int main(int argc, char **argv){
                             tau_theta_id = true;
                             last_state_time = ros::Time::now();
                             std::cout<<"HOVER is finished"<<std::endl;
+                            state = LAND;
+                            break;
                         }
                     }
 
@@ -368,6 +370,7 @@ int main(int argc, char **argv){
                     takeoff_land_trigger.takeoff_land_trigger = false; // Land
                     takeoff_land_trigger.header.stamp = ros::Time::now();
                     takeoff_land_pub.publish(takeoff_land_trigger);
+                    std::cout<<"land"<<std::endl;
                     state = FINISH;
                 }
                 break;

@@ -122,8 +122,8 @@ int main(int argc, char **argv)
                             std::cout<<"z tracking error: "<< (local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z)<<std::endl;
                         }
                     }
-   }
-                }
+                }   
+            }
                 break;
             
 

@@ -132,7 +132,7 @@ int main(int argc, char **argv)
                     takeoff_land_trigger.takeoff_land_trigger = false; // Land
                     takeoff_land_trigger.header.stamp = ros::Time::now();
                     takeoff_land_pub.publish(takeoff_land_trigger);
-                    override_rc_in.channels[9] = open_pwm; 
+                    override_rc_in.channels[9] = open_pwm;
                     override_pub.publish(override_rc_in);
                 }
                 break;

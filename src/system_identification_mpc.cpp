@@ -57,14 +57,11 @@ enum State{
     FINISH
 };
 
-void state_cb(const mavros_msgs::State::ConstPtr& msg){
-    current_state = *msg;
-}
 
 void pose_cb(const geometry_msgs::PoseStamped::ConstPtr& msg){
     local_pose.header = msg->header;
     local_pose.pose = msg->pose;
-    local_pose_received = true;
+    // local_pose_received = true;
 }
 
 void fsm_info_cb(const airo_px4::FSMInfo::ConstPtr& msg){
@@ -174,35 +171,25 @@ int main(int argc, char **argv){
     nh.getParam("system_identification_node/yaml_name",YAML_NAME);
 
     std::string yaml_path = package_path + YAML_NAME;
-    ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",10,state_cb);
-    ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,100,pose_cb);
-    //ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose",100,pose_cb);
+    //ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",10,state_cb);
+    //ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,100,pose_cb);
+    ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
     ros::Subscriber fsm_info_sub = nh.subscribe<airo_px4::FSMInfo>("/airo_px4/fsm_info",10,fsm_info_cb);
     ros::Publisher command_pub = nh.advertise<airo_px4::Reference>("/airo_px4/setpoint",10);
     ros::Publisher takeoff_land_pub = nh.advertise<airo_px4::TakeoffLandTrigger>("/airo_px4/takeoff_land_trigger",10);
 
-    ros::Subscriber target_actuator_control_sub = nh.subscribe<mavros_msgs::ActuatorControl>("/mavros/target_actuator_control",100,target_actuator_control_cb);
+    // ros::Subscriber target_actuator_control_sub = nh.subscribe<mavros_msgs::ActuatorControl>("/mavros/target_actuator_control",100,target_actuator_control_cb);
     //ros::Publisher command_pub = nh.advertise<geometry_msgs::PoseStamped>("/mavros/setpoint_position/local",10);
-    ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
-    ros::ServiceClient landing_client = nh.serviceClient<mavros_msgs::CommandTOL>("/mavros/cmd/land");
-    ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
+    // ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
+    // ros::ServiceClient landing_client = nh.serviceClient<mavros_msgs::CommandTOL>("//cmd/land");
+    // ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>("/mamavrosvros/set_mode");
 
-    message_filters::Subscriber<geometry_msgs::PoseStamped> attitude_sub(nh,"/mavros/local_position/pose",10);
-    message_filters::Subscriber<mavros_msgs::AttitudeTarget> attitude_target_sub(nh,"/mavros/setpoint_raw/target_attitude",10);
-    message_filters::Subscriber<geometry_msgs::TwistStamped> angular_rate_sub(nh,"/mavros/local_position/velocity_local",10);
-    typedef message_filters::sync_policies::ApproximateTime<geometry_msgs::PoseStamped, mavros_msgs::AttitudeTarget, geometry_msgs::TwistStamped> my_sync_policy;
-    message_filters::Synchronizer<my_sync_policy> sync(my_sync_policy(10), attitude_sub,attitude_target_sub,angular_rate_sub);
-    sync.registerCallback(boost::bind(&sync_cb,_1,_2,_3));
-
-
-
-    takeoff_pose.pose.position.x = local_pose.pose.position.x;
-    takeoff_pose.pose.position.y = local_pose.pose.position.y;
-    takeoff_pose.pose.position.z = local_pose.pose.position.z + takeoff_height;
-    takeoff_pose.pose.orientation.w = 1;
-    takeoff_pose.pose.orientation.x = 0;
-    takeoff_pose.pose.orientation.y = 0;
-    takeoff_pose.pose.orientation.z = 0;
+    // message_filters::Subscriber<geometry_msgs::PoseStamped> attitude_sub(nh,"/mavros/local_position/pose",10);
+    // message_filters::Subscriber<mavros_msgs::AttitudeTarget> attitude_target_sub(nh,"/mavros/setpoint_raw/target_attitude",10);
+    // message_filters::Subscriber<geometry_msgs::TwistStamped> angular_rate_sub(nh,"/mavros/local_position/velocity_local",10);
+    // typedef message_filters::sync_policies::ApproximateTime<geometry_msgs::PoseStamped, mavros_msgs::AttitudeTarget, geometry_msgs::TwistStamped> my_sync_policy;
+    // message_filters::Synchronizer<my_sync_policy> sync(my_sync_policy(10), attitude_sub,attitude_target_sub,angular_rate_sub);
+    // sync.registerCallback(boost::bind(&sync_cb,_1,_2,_3));
 
 
     target_pose_1.ref_pose.resize(41);
@@ -222,8 +209,57 @@ int main(int argc, char **argv){
     land_cmd.request.altitude = 0;
 
     ros::Time last_request = ros::Time::now();
+    
+    takeoff_pose.pose.position.x = local_pose.pose.position.x;
+    takeoff_pose.pose.position.y = local_pose.pose.position.y;
+    takeoff_pose.pose.position.z = local_pose.pose.position.z + takeoff_height;
+    takeoff_pose.pose.orientation.w = 1;
+    takeoff_pose.pose.orientation.x = 0;
+    takeoff_pose.pose.orientation.y = 0;
+    takeoff_pose.pose.orientation.z = 0;
+
+    for (int i = 0; i < 41; i++){
+        target_pose_1.ref_pose[i].position.x = takeoff_pose.pose.position.x;
+        target_pose_1.ref_pose[i].position.y = takeoff_pose.pose.position.y;
+        target_pose_1.ref_pose[i].position.z = takeoff_pose.pose.position.z;
+        target_pose_1.ref_pose[i].orientation.w = 1;
+        target_pose_1.ref_pose[i].orientation.x = 0.0;
+        target_pose_1.ref_pose[i].orientation.y = 0.0;
+        target_pose_1.ref_pose[i].orientation.z = 0.0;
+    }
+
+    
+
 
     while(ros::ok()){
+        for (int i = 0; i < 41; i++){
+            target_pose_2.ref_pose[i].position.x = x_maneuver_pose.pose.position.x;
+            target_pose_2.ref_pose[i].position.y = x_maneuver_pose.pose.position.y;
+            target_pose_2.ref_pose[i].position.z = x_maneuver_pose.pose.position.z;
+            target_pose_2.ref_pose[i].orientation.w = 1;
+            target_pose_2.ref_pose[i].orientation.x = 0.0;
+            target_pose_2.ref_pose[i].orientation.y = 0.0;
+            target_pose_2.ref_pose[i].orientation.z = 0.0;
+        }
+
+        for (int i = 0; i < 41; i++){
+            target_pose_3.ref_pose[i].position.x = y_maneuver_pose.pose.position.x;
+            target_pose_3.ref_pose[i].position.y = y_maneuver_pose.pose.position.y;
+            target_pose_3.ref_pose[i].position.z = y_maneuver_pose.pose.position.z;
+            target_pose_3.ref_pose[i].orientation.w = 1;
+            target_pose_3.ref_pose[i].orientation.x = 0.0;
+            target_pose_3.ref_pose[i].orientation.y = 0.0;
+            target_pose_3.ref_pose[i].orientation.z = 0.0;
+        }
+
+        for (int i = 0; i < 41; i++){
+            target_pose_4.ref_pose[i].position.x = yaw_maneuver_pose.pose.position.x;
+            target_pose_4.ref_pose[i].position.y = yaw_maneuver_pose.pose.position.y;
+            target_pose_4.ref_pose[i].position.z = yaw_maneuver_pose.pose.position.z;
+            target_pose_4.ref_pose[i].orientation = yaw_maneuver_pose.pose.orientation;
+        }
+
+       
         switch(state){
             case TAKEOFF:{
                 if( fsm_info.is_landed == true){
@@ -246,80 +282,78 @@ int main(int argc, char **argv){
                 if(fsm_info.is_waiting_for_command){
                     if(!target_1_reached){
                         target_pose_1.header.stamp = ros::Time::now();
-                        command_pub.publish(takeoff_pose);
-                        if (ros::Time::now().toSec() - last_state_time.toSec() > 10.0){
+                        command_pub.publish(target_pose_1);
+                        std::cout<<"HOVER starts"<<std::endl;
+                        std::cout<<"local x: "<<local_pose.pose.position.x<<"  local y: "<<local_pose.pose.position.y<<"  local z: "<<local_pose.pose.position.z<<std::endl;
+                        std::cout<<"target_pose_1 x: "<<target_pose_1.ref_pose[0].position.x<<"  target_pose_1 y: "<<target_pose_1.ref_pose[0].position.y<<"  target_pose_1 z: "<<target_pose_1.ref_pose[0].position.z<<std::endl;
+                        if(abs(local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x)
+                         + abs(local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y)
+                         + abs(local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z) < 0.5
+                         && ros::Time::now().toSec() - last_state_time.toSec() > 15.0){
+                            target_1_reached = true;
                             hover_thrust_id = false;
                             hover_thrust = std::accumulate(thrust.begin(),thrust.end(),0.0) / thrust.size();
-                            target_1_reached = true;
                             tau_theta_id = true;
                             last_state_time = ros::Time::now();
+                            std::cout<<"HOVER is finished"<<std::endl;
                         }
                     }
 
                     if(target_1_reached && !target_2_reached){
-                        if (ros::Time::now().toSec() - last_state_time.toSec() > 15.0){
+                        update_x_maneuver();
+                        target_pose_2.header.stamp = ros::Time::now();
+                        command_pub.publish(target_pose_2);
+                        std::cout<<"local x: "<<local_pose.pose.position.x<<"  local y: "<<local_pose.pose.position.y<<"  local z: "<<local_pose.pose.position.z<<std::endl;
+                        std::cout<<"target_pose_2 x: "<<target_pose_2.ref_pose[0].position.x<<"  target_pose_2 y: "<<target_pose_2.ref_pose[0].position.y<<"  target_pose_2 z: "<<target_pose_2.ref_pose[0].position.z<<std::endl;
+                        std::cout<<"X_MANEUVER starts"<<std::endl;
+                        if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x)
+                         + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
+                         + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.5
+                          && ros::Time::now().toSec() - last_state_time.toSec() > 15.0){
                             tau_theta_id = false;
                             target_2_reached = true;
                             tau_phi_id = true;
                             last_state_time = ros::Time::now();
-                            while(ros::ok()){
-                                command_pub.publish(takeoff_pose);
-                                if (target_reached(takeoff_pose)){
-                                    break;
-                                }
-                                ros::spinOnce();
-                                ros::Duration(rate).sleep();                        
-                            }
-                        }
-                        else{
-                            update_x_maneuver();
-                            target_pose_2.header.stamp = ros::Time::now();
-                            command_pub.publish(x_maneuver_pose);
+                            std::cout<<"X_MANEUVER is done"<<std::endl;
                         }
                     }
 
                     if(target_2_reached && !target_3_reached){
-                       if (ros::Time::now().toSec() - last_state_time.toSec() > 15.0){
+                        update_y_maneuver();
+                        target_pose_3.header.stamp = ros::Time::now();
+                        command_pub.publish(target_pose_3);
+                        std::cout<<"local x: "<<local_pose.pose.position.x<<"  local y: "<<local_pose.pose.position.y<<"  local z: "<<local_pose.pose.position.z<<std::endl;
+                        std::cout<<"target_pose_3 x: "<<target_pose_3.ref_pose[0].position.x<<"  target_pose_3 y: "<<target_pose_3.ref_pose[0].position.y<<"  target_pose_3 z: "<<target_pose_3.ref_pose[0].position.z<<std::endl;
+                        std::cout<<"Y_MANEUVER starts"<<std::endl;
+                        if(abs(local_pose.pose.position.x - target_pose_3.ref_pose[0].position.x)
+                         + abs(local_pose.pose.position.y - target_pose_3.ref_pose[0].position.y)
+                         + abs(local_pose.pose.position.z - target_pose_3.ref_pose[0].position.z) < 0.5
+                          && ros::Time::now().toSec() - last_state_time.toSec() > 15.0){
                             tau_phi_id = false;
                             target_3_reached = true;
                             tau_psi_id = true;
                             last_state_time = ros::Time::now();
-                            while(ros::ok()){
-                                command_pub.publish(takeoff_pose);
-                                if (target_reached(takeoff_pose)){
-                                    break;
-                                }
-                                ros::spinOnce();
-                                ros::Duration(rate).sleep();                        
-                            }
+                            std::cout<<"Y_MANEUVER is done"<<std::endl;
                         }
-                        else{
-                            update_y_maneuver();
-                            target_pose_3.header.stamp = ros::Time::now();
-                            command_pub.publish(y_maneuver_pose);
-                        } 
                     }
                     
                     if(target_3_reached && !target_4_reached){
-                         if (ros::Time::now().toSec() - last_state_time.toSec() > 15.0){
+                        update_yaw_maneuver();
+                        target_pose_4.header.stamp = ros::Time::now();
+                        command_pub.publish(target_pose_4);
+                        std::cout<<"local x: "<<local_pose.pose.position.x<<"  local y: "<<local_pose.pose.position.y<<"  local z: "<<local_pose.pose.position.z<<std::endl;
+                        std::cout<<"target_pose_4 x: "<<target_pose_4.ref_pose[0].position.x<<"  target_pose_4 y: "<<target_pose_4.ref_pose[0].position.y<<"  target_pose_4 z: "<<target_pose_4.ref_pose[0].position.z<<std::endl;
+                        std::cout<<"YAW_MANEUVER starts"<<std::endl;
+                        if(abs(local_pose.pose.position.x - target_pose_4.ref_pose[0].position.x)
+                         + abs(local_pose.pose.position.y - target_pose_4.ref_pose[0].position.y)
+                         + abs(local_pose.pose.position.z - target_pose_4.ref_pose[0].position.z) < 0.5
+                          && ros::Time::now().toSec() - last_state_time.toSec() > 15.0){
                             tau_psi_id = false;
                             target_4_reached = true;
+                            last_state_time = ros::Time::now();
                             state = LAND;
-                            while(ros::ok()){
-                                command_pub.publish(takeoff_pose);
-                                if (target_reached(takeoff_pose)){
-                                    break;
-                                }
-                                ros::spinOnce();
-                                ros::Duration(rate).sleep();                        
-                            }
+                            std::cout<<"YAW_MANEUVER is done"<<std::endl;
                         }
-                        else{
-                            update_yaw_maneuver();
-                            target_pose_4.header.stamp = ros::Time::now();
-                            command_pub.publish(yaw_maneuver_pose);
-                        }
-
                     }
                 }
             }

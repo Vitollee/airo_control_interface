@@ -246,7 +246,7 @@ int main(int argc, char **argv){
                 if(fsm_info.is_waiting_for_command){
                     if(!target_1_reached){
                         target_pose_1.header.stamp = ros::Time::now();
-                        command.pub.publish(takeoff_pose);
+                        command_pub.publish(takeoff_pose);
                         if (ros::Time::now().toSec() - last_state_time.toSec() > 10.0){
                             hover_thrust_id = false;
                             hover_thrust = std::accumulate(thrust.begin(),thrust.end(),0.0) / thrust.size();

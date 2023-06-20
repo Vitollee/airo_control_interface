@@ -64,7 +64,17 @@ target_link_libraries(airo_px4_node
   ${acados_lib}/libacados.so
   ${catkin_LIBRARIES}
 )
-
+add_executable(airo_ardu_node
+  src/airo_ardu_node.cpp
+  src/airo_ardu_fsm.cpp
+  src/quadrotor_mpc.cpp
+  src/rc_input.cpp
+)
+target_link_libraries(airo_ardu_node
+  ${quadrotor_model}/libacados_ocp_solver_quadrotor.so
+  ${acados_lib}/libacados.so
+  ${catkin_LIBRARIES}
+)
 add_executable(example_mission_node src/example_mission_node.cpp)
 target_link_libraries(example_mission_node
   ${catkin_LIBRARIES}
@@ -97,6 +107,12 @@ target_link_libraries(tracking
 
 add_executable(system_identification src/system_identification.cpp)
 target_link_libraries(system_identification
+  ${catkin_LIBRARIES}
+  yaml-cpp
+)
+
+add_executable(system_identification_mpc src/system_identification_mpc.cpp)
+target_link_libraries(system_identification_mpc
   ${catkin_LIBRARIES}
   yaml-cpp
 )

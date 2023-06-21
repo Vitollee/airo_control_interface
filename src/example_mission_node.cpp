@@ -50,8 +50,8 @@ int main(int argc, char **argv)
     target_pose_2.ref_pose.resize(42);
 
     for (int i = 0; i < 41; i++){
-        target_pose_1.ref_pose[i].position.x = 0.5;
-        target_pose_1.ref_pose[i].position.y = 0.5;
+        target_pose_1.ref_pose[i].position.x = 1;
+        target_pose_1.ref_pose[i].position.y = 1;
         target_pose_1.ref_pose[i].position.z = 1;
         target_pose_1.ref_pose[i].orientation.w = 1;
         target_pose_1.ref_pose[i].orientation.x = 0.0;
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < 41; i++){
         target_pose_2.ref_pose[i].position.x = 0;
-        target_pose_2.ref_pose[i].position.y = 0.5;
+        target_pose_2.ref_pose[i].position.y = 0;
         target_pose_2.ref_pose[i].position.z = 1;
         target_pose_2.ref_pose[i].orientation.w = 1;
         target_pose_2.ref_pose[i].orientation.x = 0.0;
@@ -119,6 +119,7 @@ int main(int argc, char **argv)
                     takeoff_land_trigger.takeoff_land_trigger = false; // Land
                     takeoff_land_trigger.header.stamp = ros::Time::now();
                     takeoff_land_pub.publish(takeoff_land_trigger);
+                    std::cout<<"land"<<std::endl;
                 }
                 break;
             }

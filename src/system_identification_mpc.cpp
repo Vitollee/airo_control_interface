@@ -87,7 +87,7 @@ geometry_msgs::Quaternion rpy2q(Eigen::Vector3d euler){
 void sync_cb(const geometry_msgs::PoseStampedConstPtr& attitude_msg, const mavros_msgs::AttitudeTargetConstPtr& attitude_target_msg, const geometry_msgs::TwistStampedConstPtr& angular_rate_msg){
     Eigen::Vector3d current_target_euler = q2rpy(attitude_target_msg->orientation);
     Eigen::Vector3d current_euler = q2rpy(attitude_msg->pose.orientation);
-    
+    std::cout<<"sync_cb starts"<<std::endl;
     if (tau_phi_id){
         tau_phi_diff.push_back(current_target_euler.x() - current_euler.x());
         std::cout<<"current_target_euler.x: "<<current_target_euler.x()<<std::endl;
@@ -160,7 +160,8 @@ double linear_regression(std::vector<double> x, std::vector<double> y){
     // y = a*x
     double mean_x = std::accumulate(x.begin(),x.end(),0.0)/x.size();
     double mean_y = std::accumulate(y.begin(),y.end(),0.0)/y.size();
-
+    std::cout<<"mean x: "<<mean_x<<std::endl;
+    std::cout<<"mean y: "<<mean_y<<std::endl;
     double numerator = 0.0;
     double denominator = 0.0;
     for (int i = 0; i < x.size();++i){
@@ -330,8 +331,8 @@ int main(int argc, char **argv){
                             tau_phi_id = true;
                             last_state_time = ros::Time::now();
                             std::cout<<"X_MANEUVER is done"<<std::endl;
-                            state = FINISH;
-                            break;
+                            // state = FINISH;
+                            // break;
                         }
                     }
 
@@ -371,7 +372,7 @@ int main(int argc, char **argv){
                             tau_psi_id = false;
                             target_4_reached = true;
                             last_state_time = ros::Time::now();
-                            state = LAND;
+                            //state = LAND;
                             std::cout<<"YAW_MANEUVER is done"<<std::endl;
                             state = FINISH;
                             break;

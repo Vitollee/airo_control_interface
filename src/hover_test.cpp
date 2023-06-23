@@ -99,7 +99,7 @@ int main(int argc, char **argv)
         for (int i = 0; i < 41; i++){
                 target_pose_3.ref_pose[i].position.x = object_pose.pose.position.x+0.02;
                 target_pose_3.ref_pose[i].position.y = object_pose.pose.position.y-0.2;
-                target_pose_3.ref_pose[i].position.z = 0.25;
+                target_pose_3.ref_pose[i].position.z = 0.5;
                 target_pose_3.ref_pose[i].orientation.w = 1;
                 target_pose_3.ref_pose[i].orientation.x = 0.0;
                 target_pose_3.ref_pose[i].orientation.y = 0.0;

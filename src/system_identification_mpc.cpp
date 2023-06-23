@@ -193,7 +193,9 @@ int main(int argc, char **argv){
     ros::Subscriber target_actuator_control_sub = nh.subscribe<mavros_msgs::ActuatorControl>("/mavros/target_actuator_control",100,target_actuator_control_cb);
     
     message_filters::Subscriber<geometry_msgs::PoseStamped> attitude_sub(nh,"/mavros/vision_pose/pose",10);
-    message_filters::Subscriber<mavros_msgs::AttitudeTarget> attitude_target_sub(nh,"/mavros/setpoint_raw/target_attitude",10);
+    // message_filters::Subscriber<mavros_msgs::AttitudeTarget> attitude_target_sub(nh,"/mavros/setpoint_raw/target_attitude",10);
+    message_filters::Subscriber<mavros_msgs::AttitudeTarget> attitude_target_sub(nh,"/mavros/setpoint_raw/attitude",10);
+
     message_filters::Subscriber<geometry_msgs::TwistStamped> angular_rate_sub(nh,"/mavros/local_position/velocity_local",10);
     typedef message_filters::sync_policies::ApproximateTime<geometry_msgs::PoseStamped, mavros_msgs::AttitudeTarget, geometry_msgs::TwistStamped> my_sync_policy;
     message_filters::Synchronizer<my_sync_policy> sync(my_sync_policy(10), attitude_sub,attitude_target_sub,angular_rate_sub);

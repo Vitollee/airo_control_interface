@@ -13,14 +13,17 @@ geometry_msgs::PoseStamped local_pose, object_pose, current_object_pose;
 airo_px4::Reference target_pose_1;
 airo_px4::Reference target_pose_2;
 airo_px4::Reference target_pose_3;
+airo_px4::Reference target_pose_4;
 airo_px4::FSMInfo fsm_info;
 airo_px4::TakeoffLandTrigger takeoff_land_trigger;
 bool target_1_reached = false;
 bool target_2_reached = false; 
 bool target_3_reached = false; 
+bool target_4_reached = false; 
 
 //Parameters of gripper
 int open_pwm = 1050, close_pwm = 1950;
+int count = 0;
 mavros_msgs::OverrideRCIn override_rc_in;
 
 enum State{
@@ -68,7 +71,8 @@ int main(int argc, char **argv)
     target_pose_2.ref_twist.resize(41);
     target_pose_3.ref_pose.resize(41);
     target_pose_3.ref_twist.resize(41);
-
+    target_pose_4.ref_pose.resize(41);
+    target_pose_4.ref_twist.resize(41);
     
 
   
@@ -80,8 +84,8 @@ int main(int argc, char **argv)
         object_pose.pose.position.z = current_object_pose.pose.position.z;
 
         for (int i = 0; i < 41; i++){
-            target_pose_1.ref_pose[i].position.x = -1.53;
-            target_pose_1.ref_pose[i].position.y = 1.4;
+            target_pose_1.ref_pose[i].position.x = current_object_pose.pose.position.x+0.02;
+            target_pose_1.ref_pose[i].position.y = current_object_pose.pose.position.y-0.08;
             target_pose_1.ref_pose[i].position.z = 1;
             target_pose_1.ref_pose[i].orientation.w = 1;
             target_pose_1.ref_pose[i].orientation.x = 0.0;
@@ -89,8 +93,8 @@ int main(int argc, char **argv)
             target_pose_1.ref_pose[i].orientation.z = 0.0;
         }
         for (int i = 0; i < 41; i++){
-            target_pose_2.ref_pose[i].position.x = -1.53;
-            target_pose_2.ref_pose[i].position.y = 1.4;
+            target_pose_2.ref_pose[i].position.x = current_object_pose.pose.position.x+0.02;
+            target_pose_2.ref_pose[i].position.y = current_object_pose.pose.position.y-0.08;
             target_pose_2.ref_pose[i].position.z = 0.5;
             target_pose_2.ref_pose[i].orientation.w = 1;
             target_pose_2.ref_pose[i].orientation.x = 0.0;
@@ -99,13 +103,23 @@ int main(int argc, char **argv)
         }
 
         for (int i = 0; i < 41; i++){
-                target_pose_3.ref_pose[i].position.x = -1.53;
-                target_pose_3.ref_pose[i].position.y = 1.4;
-                target_pose_3.ref_pose[i].position.z = 0.386;
+                target_pose_3.ref_pose[i].position.x = current_object_pose.pose.position.x+0.02;
+                target_pose_3.ref_pose[i].position.y = current_object_pose.pose.position.y-0.08;
+                target_pose_3.ref_pose[i].position.z = 0.25;
                 target_pose_3.ref_pose[i].orientation.w = 1;
                 target_pose_3.ref_pose[i].orientation.x = 0.0;
                 target_pose_3.ref_pose[i].orientation.y = 0.0;
                 target_pose_3.ref_pose[i].orientation.z = 0.0;
+        }
+
+        for (int i = 0; i < 41; i++){
+                target_pose_4.ref_pose[i].position.x = current_object_pose.pose.position.x+0.02;
+                target_pose_4.ref_pose[i].position.y = current_object_pose.pose.position.y-0.08;
+                target_pose_4.ref_pose[i].position.z = 0.8;
+                target_pose_4.ref_pose[i].orientation.w = 1;
+                target_pose_4.ref_pose[i].orientation.x = 0.0;
+                target_pose_4.ref_pose[i].orientation.y = 0.0;
+                target_pose_4.ref_pose[i].orientation.z = 0.0;
         } 
 
         switch(state){
@@ -176,6 +190,13 @@ int main(int argc, char **argv)
                         override_rc_in.channels[9] = close_pwm; 
                         override_pub.publish(override_rc_in);
                         std::cout<<"grasping"<<std::endl;
+                        target_pose_3.header.stamp = ros::Time::now();
+                        command_pub.publish(target_pose_3);
+                        count++;
+                        if (count > 150){
+                            target_pose_4.header.stamp = ros::Time::now();
+                            command_pub.publish(target_pose_4);
+                        }
                     }
                         
                     }

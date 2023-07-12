@@ -7,7 +7,11 @@
 #include <airo_px4/TakeoffLandTrigger.h>
 #include <airo_px4/Reference.h>
 #include <mavros_msgs/OverrideRCIn.h>
-
+#include <iostream>
+#include <fstream>
+#include <istream>
+#include <sstream>
+#include <string>
 
 geometry_msgs::PoseStamped local_pose, object_pose, current_object_pose;
 airo_px4::Reference target_pose_1;
@@ -44,6 +48,12 @@ void object_pose_cb(const geometry_msgs::PoseStamped::ConstPtr& object_pose){
     current_object_pose.pose.position.y = object_pose->pose.position.y;
     current_object_pose.pose.position.z = object_pose->pose.position.z;   
 }
+void datalogger(){
+    std::ofstream save("tracking.csv", std::ios::app);
+    save<<std::setprecision(20)<<ros::Time::now().toSec()<<
+        local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x<<","<<local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y<<","<<local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z<<std::endl;
+    save.close();
+}
 
 int main(int argc, char **argv)
 {
@@ -53,7 +63,7 @@ int main(int argc, char **argv)
     State state = TAKEOFF;
 
     //ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
-    ros::Subscriber object_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/vrpn_client_node/gh034_sav_cylinder/pose", 10, object_pose_cb);
+    ros::Subscriber object_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/vrpn_client_node/gh034_sav_bottle/pose", 10, object_pose_cb);
     ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose",100,pose_cb);
     ros::Subscriber fsm_info_sub = nh.subscribe<airo_px4::FSMInfo>("/airo_px4/fsm_info",10,fsm_info_cb);
     ros::Publisher command_pub = nh.advertise<airo_px4::Reference>("/airo_px4/setpoint",10);
@@ -139,6 +149,7 @@ int main(int argc, char **argv)
             }
         }
 
+        datalogger();
         ros::spinOnce();
         ros::Duration(rate).sleep();
     }

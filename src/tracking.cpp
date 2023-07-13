@@ -51,7 +51,7 @@ void object_pose_cb(const geometry_msgs::PoseStamped::ConstPtr& object_pose){
 void datalogger(){
     std::ofstream save("tracking.csv", std::ios::app);
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
-        local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x<<","<<local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y<<","<<local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z<<std::endl;
+        ","<<local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x<<","<<local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y<<","<<local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z<<std::endl;
     save.close();
 }
 
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
         for (int i = 0; i < 41; i++){
             target_pose_1.ref_pose[i].position.x = -1.6;
             target_pose_1.ref_pose[i].position.y = 1.42;
-            target_pose_1.ref_pose[i].position.z = 0.5;
+            target_pose_1.ref_pose[i].position.z = 1;
             target_pose_1.ref_pose[i].orientation.w = 1;
             target_pose_1.ref_pose[i].orientation.x = 0.0;
             target_pose_1.ref_pose[i].orientation.y = 0.0;
@@ -97,8 +97,6 @@ int main(int argc, char **argv)
         switch(state){
             case TAKEOFF:{
                 if(fsm_info.is_landed == true){
-                    override_rc_in.channels[9] = open_pwm; 
-                    override_pub.publish(override_rc_in);
                     while(ros::ok()){
                         takeoff_land_trigger.takeoff_land_trigger = true; // Takeoff
                         takeoff_land_trigger.header.stamp = ros::Time::now();
@@ -119,8 +117,6 @@ int main(int argc, char **argv)
                     if(!target_1_reached){
                         target_pose_1.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_1);
-                        override_rc_in.channels[9] = open_pwm; 
-                        override_pub.publish(override_rc_in);
                         std::cout<<"Pose 1"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x)
                          + abs(local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y)
@@ -142,8 +138,6 @@ int main(int argc, char **argv)
                     takeoff_land_trigger.takeoff_land_trigger = false; // Land
                     takeoff_land_trigger.header.stamp = ros::Time::now();
                     takeoff_land_pub.publish(takeoff_land_trigger);
-                    override_rc_in.channels[9] = open_pwm;
-                    override_pub.publish(override_rc_in);
                 }
                 break;
             }

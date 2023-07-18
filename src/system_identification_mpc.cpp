@@ -311,6 +311,7 @@ int main(int argc, char **argv){
                             tau_theta_id = true;
                             last_state_time = ros::Time::now();
                             std::cout<<"HOVER is finished"<<std::endl;
+                            //target_2_reached = true;
                             // state = FINISH;
                             // break;
                         }

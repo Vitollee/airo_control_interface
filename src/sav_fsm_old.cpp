@@ -123,9 +123,9 @@ int main(int argc, char **argv)
                     if(!target_4_reached && target_3_reached){
                         target_pose_4.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_4);
-                        if(abs(local_pose.pose.position.x - target_pose_4.pose.position.x)
-                         + abs(local_pose.pose.position.y - target_pose_4.pose.position.y)
-                         + abs(local_pose.pose.position.z - target_pose_4.pose.position.z) < 0.5){
+                        if(abs(local_pose.pose.position.x - target_pose_4.pose.position.x) < 0.15 &&
+                           abs(local_pose.pose.position.y - target_pose_4.pose.position.y) < 0.15 &&
+                           abs(local_pose.pose.position.z - target_pose_4.pose.position.z) < 0.15){
                             target_4_reached = true;
                         }
                     }

@@ -16,14 +16,11 @@
 geometry_msgs::PoseStamped local_pose, object_pose, current_object_pose;
 airo_px4::Reference target_pose_1;
 airo_px4::Reference target_pose_2;
-airo_px4::Reference target_pose_3;
-airo_px4::Reference target_pose_4;
 airo_px4::FSMInfo fsm_info;
 airo_px4::TakeoffLandTrigger takeoff_land_trigger;
 bool target_1_reached = false;
 bool target_2_reached = false; 
-bool target_3_reached = false; 
-bool target_4_reached = false; 
+
 
 //Parameters of gripper
 int open_pwm = 1050, close_pwm = 1950;
@@ -67,18 +64,6 @@ void datalogger(int i){
             ","<<local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x<<","<<local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y<<","<<local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z<<std::endl;
         save.close();
     }
-    if ( i == 3){
-        std::ofstream save("grasp_3.csv", std::ios::app);
-        save<<std::setprecision(20)<<ros::Time::now().toSec()<<
-            ","<<local_pose.pose.position.x - target_pose_3.ref_pose[0].position.x<<","<<local_pose.pose.position.y - target_pose_3.ref_pose[0].position.y<<","<<local_pose.pose.position.z - target_pose_3.ref_pose[0].position.z<<std::endl;
-        save.close();
-    }
-    if ( i == 4){
-        std::ofstream save("grasp_4.csv", std::ios::app);
-        save<<std::setprecision(20)<<ros::Time::now().toSec()<<
-            ","<<local_pose.pose.position.x - target_pose_4.ref_pose[0].position.x<<","<<local_pose.pose.position.y - target_pose_4.ref_pose[0].position.y<<","<<local_pose.pose.position.z - target_pose_4.ref_pose[0].position.z<<std::endl;
-        save.close();
-    }
 }
 int main(int argc, char **argv)
 {
@@ -100,13 +85,6 @@ int main(int argc, char **argv)
     target_pose_1.ref_twist.resize(41);
     target_pose_2.ref_pose.resize(41);
     target_pose_2.ref_twist.resize(41);
-    target_pose_3.ref_pose.resize(41);
-    target_pose_3.ref_twist.resize(41);
-    target_pose_4.ref_pose.resize(41);
-    target_pose_4.ref_twist.resize(41);
-    
-
-  
 
     while(ros::ok()){
         //Get current object pose as initial object pose
@@ -115,43 +93,23 @@ int main(int argc, char **argv)
         object_pose.pose.position.z = current_object_pose.pose.position.z;
 
         for (int i = 0; i < 41; i++){
-            target_pose_1.ref_pose[i].position.x = current_object_pose.pose.position.x;
-            target_pose_1.ref_pose[i].position.y = current_object_pose.pose.position.y-0.15;
-            target_pose_1.ref_pose[i].position.z = 1;
+            target_pose_1.ref_pose[i].position.x = current_object_pose.pose.position.x-0.025;
+            target_pose_1.ref_pose[i].position.y = current_object_pose.pose.position.y-0.1;
+            target_pose_1.ref_pose[i].position.z = 0.285;
             target_pose_1.ref_pose[i].orientation.w = 1;
             target_pose_1.ref_pose[i].orientation.x = 0.0;
             target_pose_1.ref_pose[i].orientation.y = 0.0;
             target_pose_1.ref_pose[i].orientation.z = 0.0;
         }
         for (int i = 0; i < 41; i++){
-            target_pose_2.ref_pose[i].position.x = current_object_pose.pose.position.x;
-            target_pose_2.ref_pose[i].position.y = current_object_pose.pose.position.y-0.15;
-            target_pose_2.ref_pose[i].position.z = 0.5;
+            target_pose_2.ref_pose[i].position.x = -0.08;
+            target_pose_2.ref_pose[i].position.y = 0;
+            target_pose_2.ref_pose[i].position.z = 0.8;
             target_pose_2.ref_pose[i].orientation.w = 1;
             target_pose_2.ref_pose[i].orientation.x = 0.0;
             target_pose_2.ref_pose[i].orientation.y = 0;
             target_pose_2.ref_pose[i].orientation.z = 0.0;
         }
-
-        for (int i = 0; i < 41; i++){
-                target_pose_3.ref_pose[i].position.x = current_object_pose.pose.position.x;
-                target_pose_3.ref_pose[i].position.y = current_object_pose.pose.position.y-0.15;
-                target_pose_3.ref_pose[i].position.z = 0.23;
-                target_pose_3.ref_pose[i].orientation.w = 1;
-                target_pose_3.ref_pose[i].orientation.x = 0.0;
-                target_pose_3.ref_pose[i].orientation.y = 0.0;
-                target_pose_3.ref_pose[i].orientation.z = 0.0;
-        }
-
-        for (int i = 0; i < 41; i++){
-                target_pose_4.ref_pose[i].position.x = -0.8;
-                target_pose_4.ref_pose[i].position.y = 0;
-                target_pose_4.ref_pose[i].position.z = 0.8;
-                target_pose_4.ref_pose[i].orientation.w = 1;
-                target_pose_4.ref_pose[i].orientation.x = 0.0;
-                target_pose_4.ref_pose[i].orientation.y = 0.0;
-                target_pose_4.ref_pose[i].orientation.z = 0.0;
-        } 
 
         switch(state){
             case TAKEOFF:{
@@ -184,57 +142,28 @@ int main(int argc, char **argv)
                         override_pub.publish(override_rc_in);
                         datalogger(1);
                         std::cout<<"Pose 1"<<std::endl;
-                        if(abs(local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x)
-                         + abs(local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y)
-                         + abs(local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z) < 0.5){
+                        if(abs(local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x) < 0.15 &&
+                           abs(local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y) < 0.15 &&
+                           abs(local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z) < 0.15){
                             target_1_reached = true;
                             std::cout<<"target 1 is finished"<<std::endl;
                         }
                     }
-                    if(target_1_reached && !target_2_reached){
-                        target_pose_2.header.stamp = ros::Time::now();
-                        command_pub.publish(target_pose_2);
-                        override_rc_in.channels[9] = open_pwm; 
-                        override_pub.publish(override_rc_in);
-                        datalogger(2);
-                        std::cout<<"hover over the target object, AGL = 1m"<<std::endl;
-                        if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x)
-                         + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
-                         + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.5){
-                            target_2_reached = true;
-                            std::cout<<"target 2 is finished"<<std::endl;
 
-                        }
-                    }
-                    if (target_2_reached && !target_3_reached){
-                        target_pose_3.header.stamp = ros::Time::now();
-                        command_pub.publish(target_pose_3);
-                        override_rc_in.channels[9] = open_pwm; 
-                        override_pub.publish(override_rc_in);
-                        datalogger(3);
-                        std::cout<<"Approaching target object"<<std::endl;
-                        if(abs(local_pose.pose.position.x - target_pose_3.ref_pose[0].position.x) < 0.15 &&
-                           abs(local_pose.pose.position.y - target_pose_3.ref_pose[0].position.y) < 0.15 &&
-                           abs(local_pose.pose.position.z - target_pose_3.ref_pose[0].position.z) < 0.15){
-                            target_3_reached = true;
-                            std::cout<<"done"<<std::endl;
-                        }
-                    }
-                    if (target_3_reached){
+                    if (target_1_reached){
                         override_rc_in.channels[9] = close_pwm; 
                         override_pub.publish(override_rc_in);
                         std::cout<<"grasping"<<std::endl;
-                        target_pose_3.header.stamp = ros::Time::now();
-                        command_pub.publish(target_pose_3);
-                        datalogger(3);
+                        target_pose_1.header.stamp = ros::Time::now();
+                        command_pub.publish(target_pose_1);
                         count++;
-                        if (count > 50){
-                            target_pose_4.header.stamp = ros::Time::now();
-                            command_pub.publish(target_pose_4);
+                        if (count > 100){
+                            target_pose_2.header.stamp = ros::Time::now();
+                            command_pub.publish(target_pose_2);
                             override_rc_in.channels[9] = close_pwm; 
                             override_pub.publish(override_rc_in);
                             std::cout<<"done grasping"<<std::endl;
-                            datalogger(4);
+                            datalogger(2);
                         }
                     }
                         

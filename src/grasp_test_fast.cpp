@@ -93,8 +93,8 @@ int main(int argc, char **argv)
         object_pose.pose.position.z = current_object_pose.pose.position.z;
 
         for (int i = 0; i < 41; i++){
-            target_pose_1.ref_pose[i].position.x = current_object_pose.pose.position.x-0.025;
-            target_pose_1.ref_pose[i].position.y = current_object_pose.pose.position.y-0.1;
+            target_pose_1.ref_pose[i].position.x = current_object_pose.pose.position.x-0.07;
+            target_pose_1.ref_pose[i].position.y = current_object_pose.pose.position.y-0.05;
             target_pose_1.ref_pose[i].position.z = 0.285;
             target_pose_1.ref_pose[i].orientation.w = 1;
             target_pose_1.ref_pose[i].orientation.x = 0.0;
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
             target_pose_1.ref_pose[i].orientation.z = 0.0;
         }
         for (int i = 0; i < 41; i++){
-            target_pose_2.ref_pose[i].position.x = -0.08;
+            target_pose_2.ref_pose[i].position.x = -1;
             target_pose_2.ref_pose[i].position.y = 0;
             target_pose_2.ref_pose[i].position.z = 0.8;
             target_pose_2.ref_pose[i].orientation.w = 1;

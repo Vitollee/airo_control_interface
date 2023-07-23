@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 
         for (int i = 0; i < 41; i++){
             target_pose_1.ref_pose[i].position.x = current_object_pose.pose.position.x;
-            target_pose_1.ref_pose[i].position.y = current_object_pose.pose.position.y-0.15;
+            target_pose_1.ref_pose[i].position.y = current_object_pose.pose.position.y-0.1;
             target_pose_1.ref_pose[i].position.z = 1;
             target_pose_1.ref_pose[i].orientation.w = 1;
             target_pose_1.ref_pose[i].orientation.x = 0.0;
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
         }
         for (int i = 0; i < 41; i++){
             target_pose_2.ref_pose[i].position.x = current_object_pose.pose.position.x;
-            target_pose_2.ref_pose[i].position.y = current_object_pose.pose.position.y-0.15;
+            target_pose_2.ref_pose[i].position.y = current_object_pose.pose.position.y-0.1;
             target_pose_2.ref_pose[i].position.z = 0.5;
             target_pose_2.ref_pose[i].orientation.w = 1;
             target_pose_2.ref_pose[i].orientation.x = 0.0;
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
 
         for (int i = 0; i < 41; i++){
                 target_pose_3.ref_pose[i].position.x = current_object_pose.pose.position.x;
-                target_pose_3.ref_pose[i].position.y = current_object_pose.pose.position.y-0.15;
+                target_pose_3.ref_pose[i].position.y = current_object_pose.pose.position.y-0.1;
                 target_pose_3.ref_pose[i].position.z = 0.23;
                 target_pose_3.ref_pose[i].orientation.w = 1;
                 target_pose_3.ref_pose[i].orientation.x = 0.0;
@@ -228,7 +228,7 @@ int main(int argc, char **argv)
                         command_pub.publish(target_pose_3);
                         datalogger(3);
                         count++;
-                        if (count > 50){
+                        if (count > 100){
                             target_pose_4.header.stamp = ros::Time::now();
                             command_pub.publish(target_pose_4);
                             override_rc_in.channels[9] = close_pwm; 

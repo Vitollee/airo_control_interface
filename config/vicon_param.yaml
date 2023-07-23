@@ -26,7 +26,15 @@ switch_threshold: 0.75
 joystick_deadzone: 0.10
 check_centered_threshold: 0.25
 hover_thrust: 0.204
-tau_phi: 0.186791
-tau_theta: 0.194788
-tau_psi: 1.71223
+
+#x base system id
+tau_phi: 0.206072
+tau_theta: 0.192673
+tau_psi: 1.91087
+
+#h base system id
+#tau_phi: 0.186791
+#tau_theta: 0.194788
+#tau_psi: 1.71223
+
 

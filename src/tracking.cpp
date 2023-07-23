@@ -13,7 +13,7 @@
 #include <sstream>
 #include <string>
 
-geometry_msgs::PoseStamped local_pose, object_pose, current_object_pose;
+geometry_msgs::PoseStamped local_pose, object_pose, current_object_pose, circle;
 airo_px4::Reference target_pose_1;
 airo_px4::Reference target_pose_2;
 airo_px4::Reference target_pose_3;
@@ -21,6 +21,7 @@ airo_px4::FSMInfo fsm_info;
 airo_px4::TakeoffLandTrigger takeoff_land_trigger;
 bool target_1_reached = false;
 bool target_2_reached = false; 
+
 
 //Parameters of gripper
 int open_pwm = 1050, close_pwm = 1950;
@@ -48,6 +49,7 @@ void object_pose_cb(const geometry_msgs::PoseStamped::ConstPtr& object_pose){
     current_object_pose.pose.position.y = object_pose->pose.position.y;
     current_object_pose.pose.position.z = object_pose->pose.position.z;   
 }
+
 void datalogger(){
     std::ofstream save("tracking.csv", std::ios::app);
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
@@ -85,8 +87,8 @@ int main(int argc, char **argv)
         object_pose.pose.position.z = current_object_pose.pose.position.z;
 
         for (int i = 0; i < 41; i++){
-            target_pose_1.ref_pose[i].position.x = -1.6;
-            target_pose_1.ref_pose[i].position.y = 1.42;
+            target_pose_1.ref_pose[i].position.x = -1;
+            target_pose_1.ref_pose[i].position.y = 1;
             target_pose_1.ref_pose[i].position.z = 1;
             target_pose_1.ref_pose[i].orientation.w = 1;
             target_pose_1.ref_pose[i].orientation.x = 0.0;
@@ -118,16 +120,18 @@ int main(int argc, char **argv)
                         target_pose_1.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_1);
                         std::cout<<"Pose 1"<<std::endl;
-                        if(abs(local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x)
-                         + abs(local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y)
-                         + abs(local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z) < 2){
+                        if(abs(local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x) < 0.08 &&
+                           abs(local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y) < 0.08 &&
+                           abs(local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z) < 0.1){
                             //target_1_reached = true;
                             std::cout<<"target 1 is finished"<<std::endl;
                             std::cout<<"x tracking error: "<< (local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x)<<std::endl;
                             std::cout<<"y tracking error: "<< (local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y)<<std::endl;
                             std::cout<<"z tracking error: "<< (local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z)<<std::endl;
+                            datalogger();
                         }
                     }
+                    
                 }   
             }
                 break;
@@ -143,7 +147,7 @@ int main(int argc, char **argv)
             }
         }
 
-        datalogger();
+        
         ros::spinOnce();
         ros::Duration(rate).sleep();
     }
